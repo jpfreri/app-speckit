@@ -4,7 +4,7 @@
 **Branch pattern:** `feature/5-student-enrollment`
 **Status:** Draft
 **Created:** 2026-09-23
-**Input:** Signed-in admin users manage a shared section catalog on one screen; new sections are added via a dialog. Sections have a name (30 characters), a required course (Feature 3), a required semester (Feature 2), start date, and end date. Students (Feature 5) choose sections when enrolling. Sections are not assigned to a user.
+**Input:** Signed-in users manage a owned enrollment catalog on one screen; new enrollments are added via a dialog. a required section (Feature 4) , a required course (Feature 3), a required semester (Feature 2), start date, and end date.
 **Depends on:** [Feature 1 — User Authentication](feature-1-user-auth.md); [Feature 2 — Semester Management](feature-2-semester-management.md); [Feature 3 — Course Management](feature-3-course-management); [Feature 4 - Section Management](feature-4-section-management)
 
 ---
