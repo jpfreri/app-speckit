@@ -46,6 +46,7 @@ const handleSubmit = async () => {
       email: email.value.trim(),
       username: username.value.trim(),
       password: password.value,
+      role: role.value,
     });
 
     Utils.setStore("user", response.data);

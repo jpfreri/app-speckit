@@ -53,7 +53,7 @@ const exports = {};
 
 exports.register = async (req, res) => {
   try {
-    const { fName, lName, email, username, password } = req.body;
+    const { fName, lName, email, username, password, role } = req.body;
 
     if (!fName?.trim()) {
       return res.status(400).send({ message: "First name is required." });
@@ -72,6 +72,9 @@ exports.register = async (req, res) => {
     }
     if (password.length < 8) {
       return res.status(400).send({ message: "Password must be at least 8 characters." });
+    }
+    if (!role) {
+      return res.status(400).send({ message: "Role is required." });
     }
 
     const normalizedUsername = username.trim().toLowerCase();
@@ -97,6 +100,7 @@ exports.register = async (req, res) => {
       email: email.trim(),
       username: normalizedUsername,
       password: hashedPassword,
+      role: role,
     });
 
     
