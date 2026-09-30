@@ -1,3 +1,4 @@
+import request from "supertest";
 import db from "../app/models/index.js";
 
 /** Sync schema for tests (no models registered in the starter shell). */
@@ -5,8 +6,36 @@ export const syncTestDatabase = async () => {
   await db.sequelize.sync({ force: true });
 };
 
-/**
- * Add feature-specific helpers here as you implement auth/lists/etc.
- * Example after Feature 1:
- *   export const registerUser = async (overrides = {}) => { … }
- */
+export const authHeader = (token) => ({ Authorization: `Bearer ${token}` });
+
+export const registerAdmin = async (app, overrides = {}) => {
+  const response = await request(app).post("/courses/register").send({
+    fName: "Alex",
+    lName: "Admin",
+    email: "admin@example.com",
+    username: "adminuser",
+    password: "password123",
+    role: "admin",
+    ...overrides,
+  });
+
+  return {
+    token: response.body.token,
+    userId: response.body.userId,
+    response,
+  };
+};
+
+export const validSemester = (overrides = {}) => ({
+  semesterName: "2026 Fall",
+  startDate: "2026-08-15",
+  endDate: "2026-12-15",
+  ...overrides,
+});
+
+export const createSemester = async (app, token, overrides = {}) => {
+  return request(app)
+    .post("/courses/semesters")
+    .set(authHeader(token))
+    .send(validSemester(overrides));
+};

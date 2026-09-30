@@ -2,6 +2,7 @@ import { Sequelize } from "sequelize";
 import userModel from "./user.model.js";
 import sessionModel from "./session.model.js";
 import sequelize from "../config/sequelizeInstance.js";
+import semesterModel from "./semester.model.js";
 
 const db = {};
 db.Sequelize = Sequelize;
@@ -10,6 +11,7 @@ db.sequelize = sequelize;
 
 db.user = userModel(sequelize, Sequelize);
 db.session = sessionModel(sequelize, Sequelize);
+db.semester = semesterModel(sequelize, Sequelize);
 
 // Register models and associations here as features define them, e.g.:
 // import userModel from "./user.model.js";
