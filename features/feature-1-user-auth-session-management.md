@@ -78,7 +78,7 @@
 ### Functional Requirements
 
 - **FR-001**: Users MUST authenticate with **username** + **password** (not email-only login).
-- **FR-002**: Registration MUST collect first name, last name, email, username, and password.
+- **FR-002**: Registration MUST collect first name, last name, email, username, password, and role. Role MUST be exactly `student` or `admin`.
 - **FR-003**: Passwords MUST be hashed with **bcrypt** (`SALT_ROUNDS = 10`) before persistence; hashes MUST never be returned by the API.
 - **FR-004**: Sessions MUST use a **JWT + Session table** pattern: token stored server-side; client sends `Authorization: Bearer <token>`.
 - **FR-005**: Session lifetime MUST be **24 hours** from creation.
@@ -140,7 +140,7 @@ Feature 1 establishes identity; Features 2–3 enforce per-user data boundaries.
   "email": "jdoe@example.com",
   "fName": "Jane",
   "lName": "Doe",
-  "role": "manager",
+  "role": "student",
   "token": "<jwt>"
 }
 ```
@@ -162,7 +162,7 @@ Feature 1 establishes identity; Features 2–3 enforce per-user data boundaries.
 ### [View: Register Page] — route name `register`
 
 - Auth form with `MenuBar` visible.
-- Fields: first name, last name, email, role, username, password, confirm password.
+- Fields: first name, last name, email, role (`student` or `admin`), username, password, confirm password.
 - Email field uses shared `emailRules` from `frontend/src/config/validation.js` (required + regex format).
 - Primary action: **Create account**.
 - Link or button to navigate to login.
@@ -203,7 +203,7 @@ Feature 1 establishes identity; Features 2–3 enforce per-user data boundaries.
 | `email`    | STRING      | Required, unique                   |
 | `username` | STRING(100) | Required, unique; stored lowercase |
 | `password` | STRING(255) | Required; bcrypt hash only         |
-| `role`     | STRING(20)  | Default `manager`                  |
+| `role`     | STRING(20)  | Required; `student` or `admin`; default `student` |
 
 ### `sessions` table
 
@@ -224,7 +224,7 @@ Feature 1 establishes identity; Features 2–3 enforce per-user data boundaries.
 #### Scenario: User registers with valid information
 
 - **Given** I am on the registration page
-- **When** I enter valid first name, last name, email, username, password, and matching confirm password
+- **When** I enter valid first name, last name, email, role `student`, username, password, and matching confirm password
 - **And** I submit the form
 - **Then** the API returns `201` with a user payload including `userId`, `username`, `email`, `token`, and `role`
 - **And** my user record is stored in the database with a bcrypt password hash
