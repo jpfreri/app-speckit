@@ -96,7 +96,7 @@ exports.update = async (req, res) => {
     const existing = await db.semester.findOne({
       where: { semesterName: semesterName.trim() },
     });
-    if (existing) {
+    if (existing && existing.id !== Number(semesterId)) {
       return res.status(400).send({
         message: "Semester name is already taken.",
       });

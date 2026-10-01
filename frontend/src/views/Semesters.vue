@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import semesterServices from "../services/semesterServices.js";
 import { toDateInputValue } from "../config/validation.js";
 
@@ -21,6 +21,16 @@ const editingId = ref(null);
 const deleteDialogOpen = ref(false);
 const semesterToDelete = ref(null);
 const deleting = ref(false);
+
+const isAddMode = computed(() => editingId.value == null);
+
+const formTitle = computed(() =>
+  isAddMode.value ? "Add Semester" : "Edit Semester"
+);
+
+const saveLabel = computed(() =>
+  isAddMode.value ? "Create" : "Save Semester"
+);
 
 const retrieveSemesters = async () => {
   loading.value = true;
@@ -56,6 +66,7 @@ const endDateRules = [
 ];
 
 const openAddDialog = () => {
+  editingId.value = null;
   form.value = emptyForm();
   formError.value = "";
   formDialogOpen.value = true;
@@ -64,7 +75,7 @@ const openAddDialog = () => {
 const openEditDialog = (semester) => {
   editingId.value = semester.id;
   form.value = {
-    semesterName: semester.name ?? "",
+    semesterName: semester.semesterName ?? "",
     startDate: toDateInputValue(semester.startDate),
     endDate: toDateInputValue(semester.endDate),
   };
@@ -76,6 +87,7 @@ const openEditDialog = (semester) => {
 const closeFormDialog = () => {
   formDialogOpen.value = false;
   formError.value = "";
+  editingId.value = null;
 };
 
 const saveSemester =  async () => {
@@ -88,12 +100,17 @@ const saveSemester =  async () => {
 
   saving.value = true;
 
+  const payload = {
+  semesterName: form.value.semesterName.trim(),
+  startDate: form.value.startDate,
+  endDate: form.value.endDate,
+  };
   try {
-    await semesterServices.createSemester({
-      semesterName: form.value.semesterName.trim(),
-      startDate: form.value.startDate,
-      endDate: form.value.endDate,
-    });
+    if (editingId.value == null) {
+      await semesterServices.createSemester(payload);
+    } else {
+      await semesterServices.updateSemester(editingId.value, payload);
+    }
     closeFormDialog();
     await retrieveSemesters();
   } catch (error) {
@@ -210,7 +227,7 @@ onMounted(retrieveSemesters);
 
         <v-dialog v-model="formDialogOpen" max-width="560">
       <v-card rounded="lg">
-        <v-card-title>Add Semester</v-card-title>
+        <v-card-title>{{ formTitle }}</v-card-title>
         <v-card-text>
           <v-form ref="formRef" @submit.prevent="saveSemester">
             <v-text-field
@@ -248,7 +265,7 @@ onMounted(retrieveSemesters);
             :loading="saving"
             @click="saveSemester"
           >
-            Create
+            {{ saveLabel }}
           </v-btn>
         </v-card-actions>
       </v-card>

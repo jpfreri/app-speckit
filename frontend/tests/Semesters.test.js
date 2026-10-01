@@ -12,6 +12,7 @@ vi.mock("../src/services/semesterServices.js", () => ({
   default: {
     getSemesters: vi.fn(),
     createSemester: vi.fn(),
+    updateSemester: vi.fn(),
   },
 }));
 
@@ -80,6 +81,7 @@ describe("Feature 2 — Semester Management", () => {
     vi.clearAllMocks();
     semesterServices.getSemesters.mockResolvedValue({ data: [] });
     semesterServices.createSemester.mockResolvedValue({ data: fall2026 });
+    semesterServices.updateSemester.mockResolvedValue({ data: fall2026 });
   });
 
   afterEach(() => {
@@ -219,6 +221,91 @@ describe("Feature 2 — Semester Management", () => {
 
       expect(wrapper.find('[aria-label="Edit semester"]').exists()).toBe(true);
       expect(wrapper.find('[aria-label="Delete semester"]').exists()).toBe(true);
+    });
+  });
+
+  describe("US-2.5 — Edit a semester", () => {
+    it("User selects to edit a semester", async () => {
+      semesterServices.getSemesters.mockResolvedValue({ data: [fall2026] });
+
+      const mounted = await mountSemesters();
+      wrapper = mounted.wrapper;
+
+      await wrapper.get('[aria-label="Edit semester"]').trigger("click");
+      await flushPromises();
+
+      expect(wrapper.text()).toContain("Edit Semester");
+      expect(wrapper.text()).toContain("2026 Fall");
+    });
+
+    it("User edits a semester with valid values and saves", async () => {
+      semesterServices.getSemesters
+        .mockResolvedValueOnce({ data: [fall2026] })
+        .mockResolvedValue({
+          data: [{ ...fall2026, semesterName: "2027 Spring" }],
+        });
+
+      const mounted = await mountSemesters();
+      wrapper = mounted.wrapper;
+
+      await wrapper.get('[aria-label="Edit semester"]').trigger("click");
+      await flushPromises();
+      await fillSemesterForm(wrapper, {
+        semesterName: "2027 Spring",
+        startDate: "2027-01-10",
+        endDate: "2027-04-30",
+      });
+      await clickButton(wrapper, "Save Semester");
+
+      expect(semesterServices.updateSemester).toHaveBeenCalledWith(1, {
+        semesterName: "2027 Spring",
+        startDate: "2027-01-10",
+        endDate: "2027-04-30",
+      });
+      expect(wrapper.find(".v-dialog-stub").exists()).toBe(false);
+      expect(wrapper.text()).toContain("2027 Spring");
+    });
+
+    it("User edits a semester with invalid values and saves", async () => {
+      semesterServices.getSemesters.mockResolvedValue({ data: [fall2026] });
+
+      const mounted = await mountSemesters();
+      wrapper = mounted.wrapper;
+
+      await wrapper.get('[aria-label="Edit semester"]').trigger("click");
+      await flushPromises();
+      await fillSemesterForm(wrapper, {
+        semesterName: "2026 Fall Extended Summer Session",
+        startDate: "2026-08-15",
+        endDate: "2026-12-15",
+      });
+      await clickButton(wrapper, "Save Semester");
+
+      expect(semesterServices.updateSemester).not.toHaveBeenCalled();
+      expect(wrapper.text()).toContain("Edit Semester");
+      expect(wrapper.text()).toContain(
+        "Semester name must be 30 characters or fewer."
+      );
+    });
+
+    it("User edits a semester and cancels", async () => {
+      semesterServices.getSemesters.mockResolvedValue({ data: [fall2026] });
+
+      const mounted = await mountSemesters();
+      wrapper = mounted.wrapper;
+
+      await wrapper.get('[aria-label="Edit semester"]').trigger("click");
+      await flushPromises();
+      await fillSemesterForm(wrapper, {
+        semesterName: "2027 Spring",
+        startDate: "2027-01-10",
+        endDate: "2027-04-30",
+      });
+      await clickButton(wrapper, "Cancel");
+
+      expect(semesterServices.updateSemester).not.toHaveBeenCalled();
+      expect(wrapper.find(".v-dialog-stub").exists()).toBe(false);
+      expect(wrapper.text()).toContain("2026 Fall");
     });
   });
 });

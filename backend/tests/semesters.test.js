@@ -80,4 +80,25 @@ describe("Feature 2 — Semester Management", () => {
       ]);
     });
   });
+
+  describe("US-2.5 — Edit a semester", () => {
+    it("User edits a semester with valid values and saves", async () => {
+      const { token } = await registerAdmin(app);
+      const created = await createSemester(app, token);
+
+      const response = await request(app)
+        .put(`/courses/semesters/${created.body.id}`)
+        .set(authHeader(token))
+        .send({
+          semesterName: "2027 Spring",
+          startDate: "2027-01-10",
+          endDate: "2027-04-30",
+        });
+
+      expect(response.status).toBe(200);
+
+      const stored = await db.semester.findByPk(created.body.id);
+      expect(stored.semesterName).toBe("2027 Spring");
+    });
+  });
 });
