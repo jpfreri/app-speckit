@@ -209,4 +209,16 @@ describe("Feature 2 — Semester Management", () => {
       );
     });
   });
+
+  describe("US-2.4 — Manage semester rows", () => {
+    it("semester rows show edit and delete actions", async () => {
+      semesterServices.getSemesters.mockResolvedValue({ data: [fall2026] });
+
+      const mounted = await mountSemesters();
+      wrapper = mounted.wrapper;
+
+      expect(wrapper.find('[aria-label="Edit semester"]').exists()).toBe(true);
+      expect(wrapper.find('[aria-label="Delete semester"]').exists()).toBe(true);
+    });
+  });
 });

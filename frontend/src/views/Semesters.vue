@@ -17,6 +17,10 @@ const form = ref(emptyForm());
 const formRef = ref(null);
 const formError = ref("");
 const saving = ref(false);
+const editingId = ref(null);
+const deleteDialogOpen = ref(false);
+const semesterToDelete = ref(null);
+const deleting = ref(false);
 
 const retrieveSemesters = async () => {
   loading.value = true;
@@ -57,6 +61,17 @@ const openAddDialog = () => {
   formDialogOpen.value = true;
 };
 
+const openEditDialog = (semester) => {
+  editingId.value = semester.id;
+  form.value = {
+    semesterName: semester.name ?? "",
+    startDate: toDateInputValue(semester.startDate),
+    endDate: toDateInputValue(semester.endDate),
+  };
+  formError.value = "";
+  formDialogOpen.value = true;
+};
+
 
 const closeFormDialog = () => {
   formDialogOpen.value = false;
@@ -86,6 +101,36 @@ const saveSemester =  async () => {
       error.response?.data?.message || "Failed to create semester.";
   } finally {
     saving.value = false;
+  }
+};
+
+const openDeleteDialog = (semester) => {
+  semesterToDelete.value = semester;
+  deleteDialogOpen.value = true;
+};
+
+const closeDeleteDialog = () => {
+  deleteDialogOpen.value = false;
+  semesterToDelete.value = null;
+};
+
+const confirmDeleteSemester = async () => {
+  if (!semesterToDelete.value?.id) {
+    return;
+  }
+
+  deleting.value = true;
+  listError.value = "";
+
+  try {
+    await semesterServices.deleteSemester(semesterToDelete.value.id);
+    closeDeleteDialog();
+    await retrieveSemesters();
+  } catch (error) {
+    listError.value =
+      error.response?.data?.message || "Failed to delete semester.";
+  } finally {
+    deleting.value = false;
   }
 };
 
@@ -131,6 +176,7 @@ onMounted(retrieveSemesters);
               <th class="text-left">Semester name</th>
               <th class="text-left">Start date</th>
               <th class="text-left">End date</th>
+              <th class="text-left">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -138,6 +184,24 @@ onMounted(retrieveSemesters);
               <td>{{ semester.semesterName }}</td>
               <td>{{ toDateInputValue(semester.startDate) }}</td>
               <td>{{ toDateInputValue(semester.endDate) }}</td>
+              <td>
+                <v-icon
+                  size="small"
+                  class="mx-4"
+                  aria-label="Edit semester"
+                  @click="openEditDialog(semester)"
+                >
+                  mdi-pencil
+                </v-icon>
+                <v-icon
+                  size="small"
+                  class="mx-4"
+                  aria-label="Delete semester"
+                  @click="openDeleteDialog(semester)"
+                >
+                  mdi-trash-can
+                </v-icon>
+              </td>
             </tr>
           </tbody>
         </v-table>
@@ -185,6 +249,26 @@ onMounted(retrieveSemesters);
             @click="saveSemester"
           >
             Create
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    
+    <v-dialog v-model="deleteDialogOpen" max-width="420">
+      <v-card rounded="lg">
+        <v-card-title>Delete Semester</v-card-title>
+        <v-card-text>Delete this semester?</v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="closeDeleteDialog">Cancel</v-btn>
+          <v-btn
+            color="primary"
+            variant="elevated"
+            class="oc-cta"
+            :loading="deleting"
+            @click="confirmDeleteSemester"
+          >
+            Delete Semester
           </v-btn>
         </v-card-actions>
       </v-card>
