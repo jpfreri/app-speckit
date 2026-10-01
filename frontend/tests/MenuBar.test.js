@@ -99,8 +99,50 @@ describe("Feature 1 — User Authentication & Session Management", () => {
       await openProfileMenu();
 
       expect(document.body.textContent).toContain("Sign out");
-      expect(navLabels()).not.toContain("Semesters");
+      expect(navLabels()).toContain("Semesters");
       expect(navLabels()).not.toContain("Courses");
+    });
+  });
+});
+
+describe("Feature 2 — Semester Management", () => {
+  describe("US-2.1 — Select to work with Semesters", () => {
+    it("Menu Selection", async () => {
+      signInAs("admin");
+      const router = await createTestRouter("/");
+      ({ wrapper } = await mountWithPlugins(Host, {
+        router,
+        attachTo: document.body,
+      }));
+      await flushPromises();
+
+      const semestersBtn = wrapper
+        .findAllComponents({ name: "VBtn" })
+        .find((btn) => btn.text().includes("Semesters"));
+
+      expect(semestersBtn).toBeTruthy();
+      expect(semestersBtn.props("to")).toBe("/semesters");
+
+      const link = semestersBtn.find("a");
+      if (link.exists()) {
+        await link.trigger("click");
+      } else {
+        await semestersBtn.trigger("click");
+      }
+      await flushPromises();
+
+      await vi.waitFor(() => {
+        expect(router.currentRoute.value.name).toBe("semesters");
+      });
+    });
+  });
+
+  describe("US-2.7 — Restrict semester management to admins", () => {
+    it("Student does not see Semesters in the menu", async () => {
+      signInAs("student");
+      await mountMenuBar("/");
+
+      expect(navLabels()).not.toContain("Semesters");
     });
   });
 });
