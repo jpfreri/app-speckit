@@ -7,6 +7,6 @@ const router = Router();
 router.get("/", [authenticate], semesterController.findAll);
 router.post("/", [authenticateAdmin], semesterController.create);
 router.put("/:semesterId", [authenticateAdmin], semesterController.update);
-// router.delete("/:semesterId", [authenticateAdmin], semesterController.remove);
+router.delete("/:semesterId", [authenticateAdmin], semesterController.remove);
 
 export default router;

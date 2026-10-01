@@ -13,6 +13,7 @@ vi.mock("../src/services/semesterServices.js", () => ({
     getSemesters: vi.fn(),
     createSemester: vi.fn(),
     updateSemester: vi.fn(),
+    deleteSemester: vi.fn(),
   },
 }));
 
@@ -82,6 +83,9 @@ describe("Feature 2 — Semester Management", () => {
     semesterServices.getSemesters.mockResolvedValue({ data: [] });
     semesterServices.createSemester.mockResolvedValue({ data: fall2026 });
     semesterServices.updateSemester.mockResolvedValue({ data: fall2026 });
+    semesterServices.deleteSemester.mockResolvedValue({
+      data: { message: "semester deleted successfully." },
+    });
   });
 
   afterEach(() => {
@@ -304,6 +308,52 @@ describe("Feature 2 — Semester Management", () => {
       await clickButton(wrapper, "Cancel");
 
       expect(semesterServices.updateSemester).not.toHaveBeenCalled();
+      expect(wrapper.find(".v-dialog-stub").exists()).toBe(false);
+      expect(wrapper.text()).toContain("2026 Fall");
+    });
+  });
+
+  describe("US-2.6 — Delete a semester", () => {
+    it("User selects to delete a semester", async () => {
+      semesterServices.getSemesters.mockResolvedValue({ data: [fall2026] });
+
+      const mounted = await mountSemesters();
+      wrapper = mounted.wrapper;
+
+      await wrapper.get('[aria-label="Delete semester"]').trigger("click");
+      await flushPromises();
+
+      expect(wrapper.text()).toContain("Delete this semester?");
+    });
+
+    it("User deletes a semester", async () => {
+      semesterServices.getSemesters
+        .mockResolvedValueOnce({ data: [fall2026] })
+        .mockResolvedValue({ data: [] });
+
+      const mounted = await mountSemesters();
+      wrapper = mounted.wrapper;
+
+      await wrapper.get('[aria-label="Delete semester"]').trigger("click");
+      await flushPromises();
+      await clickButton(wrapper, "Delete Semester");
+
+      expect(semesterServices.deleteSemester).toHaveBeenCalledWith(1);
+      expect(wrapper.find(".v-dialog-stub").exists()).toBe(false);
+      expect(wrapper.text()).not.toContain("2026 Fall");
+    });
+
+    it("User cancels deleting a semester", async () => {
+      semesterServices.getSemesters.mockResolvedValue({ data: [fall2026] });
+
+      const mounted = await mountSemesters();
+      wrapper = mounted.wrapper;
+
+      await wrapper.get('[aria-label="Delete semester"]').trigger("click");
+      await flushPromises();
+      await clickButton(wrapper, "Cancel");
+
+      expect(semesterServices.deleteSemester).not.toHaveBeenCalled();
       expect(wrapper.find(".v-dialog-stub").exists()).toBe(false);
       expect(wrapper.text()).toContain("2026 Fall");
     });

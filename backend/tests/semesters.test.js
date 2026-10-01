@@ -101,4 +101,18 @@ describe("Feature 2 — Semester Management", () => {
       expect(stored.semesterName).toBe("2027 Spring");
     });
   });
+
+  describe("US-2.6 — Delete a semester", () => {
+    it("User deletes a semester", async () => {
+      const { token } = await registerAdmin(app);
+      const created = await createSemester(app, token);
+
+      const response = await request(app)
+        .delete(`/courses/semesters/${created.body.id}`)
+        .set(authHeader(token));
+
+      expect(response.status).toBe(200);
+      expect(await db.semester.findByPk(created.body.id)).toBeNull();
+    });
+  });
 });
