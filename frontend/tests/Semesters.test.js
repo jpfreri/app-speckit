@@ -22,6 +22,13 @@ const fall2026 = {
   endDate: "2026-12-15",
 };
 
+const spring2026 = {
+  id: 2,
+  semesterName: "2026 Spring",
+  startDate: "2026-01-15",
+  endDate: "2026-05-15",
+};
+
 const validSemesterForm = (overrides = {}) => ({
   semesterName: "2026 Fall",
   startDate: "2026-08-15",
@@ -177,6 +184,29 @@ describe("Feature 2 — Semester Management", () => {
       expect(semesterServices.createSemester).toHaveBeenCalled();
       expect(wrapper.text()).toContain("Semester name is already taken.");
       expect(wrapper.find(".v-dialog-stub").exists()).toBe(true);
+    });
+  });
+
+  describe("US-2.3 — View semesters", () => {
+    it("Semesters view loads with existing semesters", async () => {
+      semesterServices.getSemesters.mockResolvedValue({
+        data: [spring2026, fall2026],
+      });
+
+      const mounted = await mountSemesters();
+      wrapper = mounted.wrapper;
+
+      const names = wrapper.findAll("tbody tr").map((row) => row.find("td").text());
+      expect(names).toEqual(["2026 Spring", "2026 Fall"]);
+    });
+
+    it("There are no semesters", async () => {
+      const mounted = await mountSemesters();
+      wrapper = mounted.wrapper;
+
+      expect(wrapper.text()).toContain(
+        "No semesters yet. Create your first semester."
+      );
     });
   });
 });

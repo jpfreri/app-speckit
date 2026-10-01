@@ -57,4 +57,27 @@ describe("Feature 2 — Semester Management", () => {
       );
     });
   });
+
+  describe("US-2.3 — View semesters", () => {
+    it("Semesters view loads with existing semesters", async () => {
+      const { token } = await registerAdmin(app);
+      await createSemester(app, token, { semesterName: "2026 Fall" });
+      await createSemester(app, token, {
+        semesterName: "2026 Spring",
+        startDate: "2026-01-15",
+        endDate: "2026-05-15",
+      });
+
+      const response = await request(app)
+        .get("/courses/semesters")
+        .set(authHeader(token));
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveLength(2);
+      expect(response.body.map((row) => row.semesterName)).toEqual([
+        "2026 Spring",
+        "2026 Fall",
+      ]);
+    });
+  });
 });
