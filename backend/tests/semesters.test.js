@@ -8,6 +8,7 @@ import db from "../app/models/index.js";
 import {
   syncTestDatabase,
   registerAdmin,
+  registerUser,
   authHeader,
   validSemester,
   createSemester,
@@ -113,6 +114,43 @@ describe("Feature 2 — Semester Management", () => {
 
       expect(response.status).toBe(200);
       expect(await db.semester.findByPk(created.body.id)).toBeNull();
+    });
+  });
+
+  describe("US-2.7 — Restrict semester management to admins", () => {
+    it("Student can list semesters via the API", async () => {
+      const { token: adminToken } = await registerAdmin(app);
+      await createSemester(app, adminToken);
+
+      const { token: studentToken } = await registerUser(app);
+
+      const response = await request(app)
+        .get("/courses/semesters")
+        .set(authHeader(studentToken));
+
+      expect(response.status).toBe(200);
+      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body).toHaveLength(1);
+    });
+
+    it("Student cannot create a semester via the API", async () => {
+      const { token } = await registerUser(app);
+
+      const response = await request(app)
+        .post("/courses/semesters")
+        .set(authHeader(token))
+        .send(validSemester());
+
+      expect(response.status).toBe(403);
+      expect(response.body).toEqual({ message: "Admin role required." });
+      expect(await db.semester.count()).toBe(0);
+    });
+
+    it("Unauthenticated API request to semesters", async () => {
+      const response = await request(app).get("/courses/semesters");
+
+      expect(response.status).toBe(401);
+      expect(response.body.message).toMatch(/Unauthorized/i);
     });
   });
 });

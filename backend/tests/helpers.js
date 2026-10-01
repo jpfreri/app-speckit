@@ -26,6 +26,24 @@ export const registerAdmin = async (app, overrides = {}) => {
   };
 };
 
+export const registerUser = async (app, overrides = {}) => {
+  const response = await request(app).post("/courses/register").send({
+    fName: "Jane",
+    lName: "Doe",
+    email: "student1@example.com",
+    username: "student1",
+    password: "password123",
+    role: "student",
+    ...overrides,
+  });
+
+  return {
+    token: response.body.token,
+    userId: response.body.userId,
+    response,
+  };
+};
+
 export const validSemester = (overrides = {}) => ({
   semesterName: "2026 Fall",
   startDate: "2026-08-15",

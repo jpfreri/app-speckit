@@ -136,4 +136,13 @@ describe("Feature 2 — Semester Management", () => {
       });
     });
   });
+
+  describe("US-2.7 — Restrict semester management to admins", () => {
+    it("Student does not see Semesters in the menu", async () => {
+      signInAs("student");
+      await mountMenuBar("/");
+
+      expect(navLabels()).not.toContain("Semesters");
+    });
+  });
 });
