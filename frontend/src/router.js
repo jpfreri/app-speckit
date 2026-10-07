@@ -7,7 +7,6 @@ import Semesters from "./views/Semesters.vue";
 
 const publicRouteNames = new Set(["login", "registers"]);
 
-const publicRouteNames = new Set(["login", "registers"]);
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
