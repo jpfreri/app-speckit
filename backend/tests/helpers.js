@@ -57,3 +57,16 @@ export const createSemester = async (app, token, overrides = {}) => {
     .set(authHeader(token))
     .send(validSemester(overrides));
 };
+
+export const validCourse = (overrides = {}) => ({
+  courseName: "CMSC-1234",
+  semesterId: 1,
+  ...overrides,
+});
+
+export const createCourse = async (app, token, overrides = {}) => {
+  return request(app)
+    .post("/courses/courses")
+    .set(authHeader(token))
+    .send(validCourse(overrides));
+};

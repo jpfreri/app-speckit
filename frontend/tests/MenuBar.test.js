@@ -100,7 +100,7 @@ describe("Feature 1 — User Authentication & Session Management", () => {
 
       expect(document.body.textContent).toContain("Sign out");
       expect(navLabels()).toContain("Semesters");
-      expect(navLabels()).not.toContain("Courses");
+      expect(navLabels()).toContain("Courses");
     });
   });
 });
@@ -143,6 +143,48 @@ describe("Feature 2 — Semester Management", () => {
       await mountMenuBar("/");
 
       expect(navLabels()).not.toContain("Semesters");
+    });
+  });
+});
+
+describe("Feature 3 — Course Management", () => {
+  describe("US-3.1 — Select to work with Courses", () => {
+    it("Menu Selection", async () => {
+      signInAs("admin");
+      const router = await createTestRouter("/");
+      ({ wrapper } = await mountWithPlugins(Host, {
+        router,
+        attachTo: document.body,
+      }));
+      await flushPromises();
+
+      const coursesBtn = wrapper
+        .findAllComponents({ name: "VBtn" })
+        .find((btn) => btn.text().includes("Courses"));
+
+      expect(coursesBtn).toBeTruthy();
+      expect(coursesBtn.props("to")).toBe("/courses");
+
+      const link = coursesBtn.find("a");
+      if (link.exists()) {
+        await link.trigger("click");
+      } else {
+        await coursesBtn.trigger("click");
+      }
+      await flushPromises();
+
+      await vi.waitFor(() => {
+        expect(router.currentRoute.value.name).toBe("courses");
+      });
+    });
+  });
+
+  describe("US-3.7 — Restrict course management to admins", () => {
+    it("Student does not see Courses in the menu", async () => {
+      signInAs("student");
+      await mountMenuBar("/");
+
+      expect(navLabels()).not.toContain("Courses");
     });
   });
 });
