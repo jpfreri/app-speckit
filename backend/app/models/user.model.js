@@ -18,12 +18,10 @@ export default (sequelize, Sequelize) => {
         email: {
           type: Sequelize.STRING,
           allowNull: false,
-          unique: true,
         },
         username: {
           type: Sequelize.STRING(100),
           allowNull: false,
-          unique: true,
         },
         password: {
           type: Sequelize.STRING(255),
@@ -36,6 +34,10 @@ export default (sequelize, Sequelize) => {
         },
       },
       {
+        indexes: [
+          { unique: true, fields: ["email"] },
+          { unique: true, fields: ["username"] },
+        ],
         defaultScope: {
           attributes: { exclude: ["password"] },
         },
@@ -46,6 +48,8 @@ export default (sequelize, Sequelize) => {
             }
           },
         },
+      
+       
       }
     );
   
