@@ -1,10 +1,10 @@
 import { createRouter, createWebHistory } from "vue-router";
-import Login from "./views/login.vue";
+import Login from "./views/Login.vue";
 import Utils from "./config/utils.js";
 import Register from "./views/Register.vue"
 import Home from "./views/Home.vue";
 import Semesters from "./views/Semesters.vue";
-
+import Courses from "./views/Courses.vue";
 const publicRouteNames = new Set(["login", "registers"]);
 
 const router = createRouter({
@@ -30,6 +30,11 @@ const router = createRouter({
       name: "semesters",
       component: Semesters,
     },
+    {
+      path: "/courses",
+      name: "courses",
+      component: Courses,
+    }
    
   ],
 });
@@ -51,5 +56,6 @@ router.beforeEach((to, _from, next) => {
 
   next();
 });
+
 
 export default router;
