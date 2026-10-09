@@ -19,3 +19,18 @@ describe("Feature 2 — Semester Management", () => {
     });
   });
 });
+
+describe("Feature 3 — Course Management", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  describe("US-3.7 — Restrict course management to admins", () => {
+    it("Unauthenticated user navigates to courses", async () => {
+      await router.push("/login");
+      await router.push("/courses");
+
+      expect(router.currentRoute.value.name).toBe("login");
+    });
+  });
+});

@@ -165,6 +165,14 @@ const handleLogout = async () => {
     >
     Semesters
    </v-btn>
+   <v-btn
+    v-if="user?.role === 'admin'"
+    variant="text"
+    color="white"
+    to="/courses"
+    >
+    Courses
+   </v-btn>
     
 
     <v-spacer />
