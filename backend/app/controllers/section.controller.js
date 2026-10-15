@@ -7,12 +7,12 @@ const sectionInclude = [
     {
         model: db.course,
         as: "course",
-        attributes: ["id", "name"],
+        attributes: ["id", "courseName"],
     },
     {
         model: db.semester,
         as: "semester",
-        attributes: ["id", "name"],
+        attributes: ["id", "semesterName"],
     },
 ]
 
@@ -50,7 +50,7 @@ exports.findAll = async (req, res) => {
 
     return res.send(sections);
   } catch (err) {
-    logger.error(`season findAll failed: ${err.message}`);
+    logger.error(`section findAll failed: ${err.message}`);
     return res.status(500).send({ message: "Failed to fetch sections." });
   }
 };
