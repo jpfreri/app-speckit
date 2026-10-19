@@ -251,4 +251,43 @@ describe("Feature 5 — Student Enrollment", () => {
             wrapper.unmount();
         });
     });
+    describe("US-5.3 — View enrollments", () => {
+        it("Enrollment view loads with existing enrollments", async () => {
+            const wrapper = await mountEnrollments([
+                enrollmentRecord({
+                    id: 1,
+                    sectionId: 10,
+                    sectionName: "01",
+                    startDate: "2026-08-15",
+                    endDate: "2026-12-15",
+                }),
+                enrollmentRecord({
+                    id: 2,
+                    sectionId: 11,
+                    sectionName: "02",
+                    startDate: "2026-09-01",
+                    endDate: "2026-12-15",
+                }),
+            ]);
+
+            const rows = wrapper.findAll("tbody tr").map((row) => row.text());
+            expect(rows).toHaveLength(2);
+            expect(rows[0]).toContain("01");
+            expect(rows[0]).toContain("CMSC-1234");
+            expect(rows[0]).toContain("2026 Fall");
+            expect(rows[1]).toContain("02");
+            expect(rows[1]).toContain("CMSC-1234");
+            expect(rows[1]).toContain("2026 Fall");
+            wrapper.unmount();
+        });
+
+        it("There are no enrollments", async () => {
+            const wrapper = await mountEnrollments([]);
+
+            expect(wrapper.text()).toContain(
+                "No enrollments yet. Create your first enrollment."
+            );
+            wrapper.unmount();
+        });
+    });
 });

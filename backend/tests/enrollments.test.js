@@ -136,4 +136,55 @@ describe("Feature 5 — Student Enrollment", () => {
       expect(stored).toHaveLength(0);
     });
   });
+  describe("US-5.3 — View enrollments", () => {
+    it("Enrollment view loads with existing enrollments", async () => {
+      const other = await db.user.findOne({ where: { username: "other" } });
+
+      const laterSection = await db.section.create({
+        sectionName: "02",
+        courseId: section.courseId,
+        semesterId: section.semesterId,
+        startDate: "2026-09-01",
+        endDate: "2026-12-15",
+      });
+
+      // Insert later startDate first so DB order ≠ display order
+      await db.enrollment.create({
+        userId: student.id,
+        sectionId: laterSection.id,
+      });
+      await db.enrollment.create({
+        userId: student.id,
+        sectionId: section.id,
+      });
+      await db.enrollment.create({
+        userId: other.id,
+        sectionId: section.id,
+      });
+
+      const response = await request(app)
+        .get("/courses/enrollments")
+        .set(auth(studentToken));
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveLength(2);
+      expect(response.body.every((row) => row.userId === student.id)).toBe(true);
+      expect(response.body[0].startDate).toBe("2026-08-15");
+      expect(response.body[1].startDate).toBe("2026-09-01");
+      expect(response.body[0]).toMatchObject({
+        sectionName: "01",
+        courseName: "CMSC-1234",
+        semesterName: "2026 Fall",
+        startDate: "2026-08-15",
+        endDate: "2026-12-15",
+      });
+      expect(response.body[1]).toMatchObject({
+        sectionName: "02",
+        courseName: "CMSC-1234",
+        semesterName: "2026 Fall",
+        startDate: "2026-09-01",
+        endDate: "2026-12-15",
+      });
+    });
+  });
 });
