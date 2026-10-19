@@ -1,9 +1,11 @@
 import { createRouter, createWebHistory } from "vue-router";
-import Login from "./views/login.vue";
+import Login from "./views/Login.vue";
 import Utils from "./config/utils.js";
-import Register from "./views/Register.vue"
+import Register from "./views/Register.vue";
 import Home from "./views/Home.vue";
 import Semesters from "./views/Semesters.vue";
+import Courses from "./views/Courses.vue";
+import Sections from "./views/Sections.vue";
 
 const publicRouteNames = new Set(["login", "registers"]);
 
@@ -34,11 +36,14 @@ const router = createRouter({
       path: "/courses",
       name: "courses",
       component: Courses,
-    }
-   
+    },
+    {
+      path: "/sections",
+      name: "sections",
+      component: Sections,
+    },
   ],
 });
-
 
 router.beforeEach((to, _from, next) => {
   const user = Utils.getStore("user");
@@ -56,6 +61,5 @@ router.beforeEach((to, _from, next) => {
 
   next();
 });
-
 
 export default router;

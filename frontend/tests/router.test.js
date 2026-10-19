@@ -34,3 +34,18 @@ describe("Feature 3 — Course Management", () => {
     });
   });
 });
+
+describe("router", () => {
+  beforeEach(async () => {
+    localStorage.clear();
+    await router.push("/login");
+    await router.isReady();
+  });
+
+  it("Unauthenticated user navigates to sections", async () => {
+    await router.push("/sections");
+    await router.isReady();
+
+    expect(router.currentRoute.value.name).toBe("login");
+  });
+});

@@ -4,40 +4,57 @@ import sessionModel from "./session.model.js";
 import sequelize from "../config/sequelizeInstance.js";
 import semesterModel from "./semester.model.js";
 import courseModel from "./course.model.js";
+import sectionModel from "./section.model.js";
+
 const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
-
-
 db.user = userModel(sequelize, Sequelize);
 db.session = sessionModel(sequelize, Sequelize);
 db.semester = semesterModel(sequelize, Sequelize);
 db.course = courseModel(sequelize, Sequelize);
-// Register models and associations here as features define them, e.g.:
-// import userModel from "./user.model.js";
-// db.user = userModel(sequelize, Sequelize);
+db.section = sectionModel(sequelize, Sequelize);
 
 db.user.hasMany(db.session, {
-    foreignKey: "userId",
-    as: "sessions",
-    onDelete: "CASCADE",
-  });
-  
-  db.session.belongsTo(db.user, {
-    foreignKey: "userId",
-    as: "user",
-  });
-  
-  db.semester.hasMany(db.course, {
-    foreignKey: "semesterId",
-    as: "courses",
-    onDelete: "CASCADE",
-  });
-  
-  db.course.belongsTo(db.semester, {
-    foreignKey: "semesterId",
-    as: "semester",
-  });
-  
+  foreignKey: "userId",
+  as: "sessions",
+  onDelete: "CASCADE",
+});
+
+db.session.belongsTo(db.user, {
+  foreignKey: "userId",
+  as: "user",
+});
+
+db.semester.hasMany(db.course, {
+  foreignKey: "semesterId",
+  as: "courses",
+  onDelete: "CASCADE",
+});
+
+db.course.belongsTo(db.semester, {
+  foreignKey: "semesterId",
+  as: "semester",
+});
+
+db.section.belongsTo(db.course, {
+  foreignKey: "courseId",
+  as: "course",
+});
+
+db.course.hasMany(db.section, {
+  foreignKey: "courseId",
+  as: "sections",
+});
+
+db.section.belongsTo(db.semester, {
+  foreignKey: "semesterId",
+  as: "semester",
+});
+
+db.semester.hasMany(db.section, {
+  foreignKey: "semesterId",
+  as: "sections",
+});
 
 export default db;

@@ -155,26 +155,30 @@ const handleLogout = async () => {
 <template>
   <v-app-bar color="primary" density="comfortable">
     <v-app-bar-title>Semester Management System</v-app-bar-title>
-
-    
-   <v-btn
-    v-if="user?.role === 'admin'"
-    variant="text"
-    color="white"
-    to="/semesters"
+    <v-btn
+      v-if="user?.role === 'admin'"
+      variant="text"
+      color="white"
+      to="/semesters"
     >
-    Semesters
-   </v-btn>
-   <v-btn
-    v-if="user?.role === 'admin'"
-    variant="text"
-    color="white"
-    to="/courses"
+      Semesters
+    </v-btn>
+    <v-btn
+      v-if="user?.role === 'admin'"
+      variant="text"
+      color="white"
+      to="/courses"
     >
-    Courses
-   </v-btn>
-    
-
+      Courses
+    </v-btn>
+    <v-btn
+      v-if="user?.role === 'admin'"
+      variant="text"
+      color="white"
+      to="/sections"
+    >
+      Sections
+    </v-btn>
     <v-spacer />
 
     <v-menu
