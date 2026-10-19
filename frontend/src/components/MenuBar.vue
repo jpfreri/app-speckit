@@ -179,6 +179,14 @@ const handleLogout = async () => {
     >
       Sections
     </v-btn>
+    <v-btn
+      v-if="user?.role === 'student'"
+      variant="text"
+      color="white"
+      to="/enrollments"
+    >
+      Enrollment
+    </v-btn>
     <v-spacer />
 
     <v-menu

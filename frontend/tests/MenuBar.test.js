@@ -229,3 +229,36 @@ describe("MenuBar", () => {
     expect(navLabels()).not.toContain("Sections");
   });
 });
+
+describe("Feature 5 — Student Enrollment", () => {
+  describe("US-5.1 — Open enrollment from the menu", () => {
+    it("Menu Selection", async () => {
+      signInAs("student");
+      const router = await createTestRouter("/");
+      ({ wrapper } = await mountWithPlugins(Host, {
+        router,
+        attachTo: document.body,
+      }));
+      await flushPromises();
+
+      const enrollmentBtn = wrapper
+        .findAllComponents({ name: "VBtn" })
+        .find((btn) => btn.text().includes("Enrollment"));
+
+      expect(enrollmentBtn).toBeTruthy();
+      expect(enrollmentBtn.props("to")).toBe("/enrollments");
+
+      const link = enrollmentBtn.find("a");
+      if (link.exists()) {
+        await link.trigger("click");
+      } else {
+        await enrollmentBtn.trigger("click");
+      }
+      await flushPromises();
+
+      await vi.waitFor(() => {
+        expect(router.currentRoute.value.name).toBe("enrollments");
+      });
+    });
+  });
+});
