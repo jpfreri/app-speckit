@@ -187,4 +187,103 @@ describe("Feature 5 — Student Enrollment", () => {
       });
     });
   });
+  describe("US-5.5 — Edit an enrollment", () => {
+    it("Student edits an enrollment with a valid section and saves", async () => {
+      const enrollment = await db.enrollment.create({
+        userId: student.id,
+        sectionId: section.id,
+      });
+      const section02 = await db.section.create({
+        sectionName: "02",
+        courseId: section.courseId,
+        semesterId: section.semesterId,
+        startDate: "2026-09-01",
+        endDate: "2026-12-15",
+      });
+
+      const response = await request(app)
+        .put(`/courses/enrollments/${enrollment.id}`)
+        .set(auth(studentToken))
+        .send({ sectionId: section02.id });
+
+      expect(response.status).toBe(200);
+      expect(response.body.sectionName).toBe("02");
+      expect(response.body.sectionId).toBe(section02.id);
+    });
+
+    it("Student updates an enrollment that is missing or not theirs", async () => {
+      const other = await db.user.findOne({ where: { username: "other" } });
+      const otherEnrollment = await db.enrollment.create({
+        userId: other.id,
+        sectionId: section.id,
+      });
+
+      const missing = await request(app)
+        .put("/courses/enrollments/999999")
+        .set(auth(studentToken))
+        .send({ sectionId: section.id });
+
+      expect(missing.status).toBe(404);
+      expect(missing.body).toEqual({
+        message: "Enrollment with id=999999 not found.",
+      });
+
+      const notTheirs = await request(app)
+        .put(`/courses/enrollments/${otherEnrollment.id}`)
+        .set(auth(studentToken))
+        .send({ sectionId: section.id });
+
+      expect(notTheirs.status).toBe(404);
+      expect(notTheirs.body).toEqual({
+        message: `Enrollment with id=${otherEnrollment.id} not found.`,
+      });
+    });
+  });
+
+  describe("US-5.6 — Delete an enrollment", () => {
+    it("Student deletes an enrollment", async () => {
+      const enrollment = await db.enrollment.create({
+        userId: student.id,
+        sectionId: section.id,
+      });
+
+      const response = await request(app)
+        .delete(`/courses/enrollments/${enrollment.id}`)
+        .set(auth(studentToken));
+
+      expect(response.status).toBe(200);
+
+      const stored = await db.enrollment.findByPk(enrollment.id);
+      expect(stored).toBeNull();
+    });
+
+    it("Student deletes an enrollment that is missing or not theirs", async () => {
+      const other = await db.user.findOne({ where: { username: "other" } });
+      const otherEnrollment = await db.enrollment.create({
+        userId: other.id,
+        sectionId: section.id,
+      });
+
+      const missing = await request(app)
+        .delete("/courses/enrollments/999999")
+        .set(auth(studentToken));
+
+      expect(missing.status).toBe(404);
+      expect(missing.body).toEqual({
+        message: "Enrollment with id=999999 not found.",
+      });
+
+      const notTheirs = await request(app)
+        .delete(`/courses/enrollments/${otherEnrollment.id}`)
+        .set(auth(studentToken));
+
+      expect(notTheirs.status).toBe(404);
+      expect(notTheirs.body).toEqual({
+        message: `Enrollment with id=${otherEnrollment.id} not found.`,
+      });
+
+      const stillThere = await db.enrollment.findByPk(otherEnrollment.id);
+      expect(stillThere).not.toBeNull();
+    });
+  });
 });

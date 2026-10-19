@@ -15,6 +15,8 @@ vi.mock("../src/services/enrollmentServices.js", () => ({
     default: {
         getEnrollments: vi.fn(),
         createEnrollment: vi.fn(),
+        updateEnrollment: vi.fn(),
+        deleteEnrollment: vi.fn(),
     },
 }));
 
@@ -30,6 +32,15 @@ const section = {
     courseId: 1,
     semesterId: 2,
     startDate: "2026-08-15",
+    endDate: "2026-12-15",
+};
+
+const section2 = {
+    id: 11,
+    sectionName: "02",
+    courseId: 1,
+    semesterId: 2,
+    startDate: "2026-09-01",
     endDate: "2026-12-15",
 };
 
@@ -101,7 +112,7 @@ const signInStudent = () => {
 
 const mountEnrollments = async (rows = []) => {
     enrollmentServices.getEnrollments.mockResolvedValue({ data: rows });
-    sectionServices.getSections.mockResolvedValue({ data: [section] });
+    sectionServices.getSections.mockResolvedValue({ data: [section, section2] });
 
     const router = createRouter({
         history: createMemoryHistory(),
@@ -287,6 +298,177 @@ describe("Feature 5 — Student Enrollment", () => {
             expect(wrapper.text()).toContain(
                 "No enrollments yet. Create your first enrollment."
             );
+            wrapper.unmount();
+        });
+    });
+    describe("US-5.4 — Manage enrollment rows", () => {
+        it("Enrollment rows show edit and delete actions", async () => {
+            const wrapper = await mountEnrollments([enrollmentRecord()]);
+
+            expect(wrapper.find('[aria-label="Edit enrollment"]').exists()).toBe(true);
+            expect(wrapper.find('[aria-label="Delete enrollment"]').exists()).toBe(true);
+            wrapper.unmount();
+        });
+    });
+
+    describe("US-5.5 — Edit an enrollment", () => {
+        it("Student selects to edit an enrollment", async () => {
+            const wrapper = await mountEnrollments([enrollmentRecord()]);
+            await wrapper.find('[aria-label="Edit enrollment"]').trigger("click");
+            await flushPromises();
+
+            expect(cardTitle(wrapper, "Edit Enrollment").text()).toBe("Edit Enrollment");
+            const select = wrapper
+                .findAllComponents({ name: "VSelect" })
+                .find((c) => c.props("label") === "Section");
+            expect(select.props("modelValue")).toBe(section.id);
+            wrapper.unmount();
+        });
+
+        it("Student edits an enrollment with a valid section and saves", async () => {
+            const existing = enrollmentRecord();
+            const updated = enrollmentRecord({
+                sectionId: section2.id,
+                sectionName: "02",
+                startDate: "2026-09-01",
+            });
+
+            enrollmentServices.getEnrollments
+                .mockResolvedValueOnce({ data: [existing] })
+                .mockResolvedValueOnce({ data: [updated] });
+            sectionServices.getSections.mockResolvedValue({
+                data: [section, section2],
+            });
+            enrollmentServices.updateEnrollment.mockResolvedValue({ data: updated });
+
+            const router = createRouter({
+                history: createMemoryHistory(),
+                routes: [
+                    { path: "/enrollments", name: "enrollments", component: Enrollments },
+                ],
+            });
+            await router.push("/enrollments");
+            await router.isReady();
+
+            const wrapper = mount(Enrollments, {
+                attachTo: document.body,
+                global: { plugins: [vuetify, router], stubs: viewStubs },
+            });
+            await flushPromises();
+
+            await wrapper.find('[aria-label="Edit enrollment"]').trigger("click");
+            await flushPromises();
+            await chooseSection(wrapper, section2.id);
+            await clickText(wrapper, "Save Enrollment");
+
+            expect(enrollmentServices.updateEnrollment).toHaveBeenCalledWith(
+                existing.id,
+                { sectionId: section2.id }
+            );
+            expect(cardTitle(wrapper, "Edit Enrollment")).toBeUndefined();
+            expect(wrapper.text()).toContain("02");
+            wrapper.unmount();
+        });
+
+        it("Student edits an enrollment with a missing section and saves", async () => {
+            const wrapper = await mountEnrollments([enrollmentRecord()]);
+            await wrapper.find('[aria-label="Edit enrollment"]').trigger("click");
+            await flushPromises();
+
+            const select = wrapper
+                .findAllComponents({ name: "VSelect" })
+                .find((c) => c.props("label") === "Section");
+            await select.vm.$emit("update:modelValue", null);
+            await flushPromises();
+
+            await clickText(wrapper, "Save Enrollment");
+
+            expect(enrollmentServices.updateEnrollment).not.toHaveBeenCalled();
+            expect(wrapper.text()).toContain("Required");
+            expect(cardTitle(wrapper, "Edit Enrollment")).toBeTruthy();
+            wrapper.unmount();
+        });
+
+        it("Student edits an enrollment and cancels", async () => {
+            const wrapper = await mountEnrollments([enrollmentRecord()]);
+            await wrapper.find('[aria-label="Edit enrollment"]').trigger("click");
+            await flushPromises();
+
+            await chooseSection(wrapper, section2.id);
+            await clickText(wrapper, "Cancel");
+
+            expect(enrollmentServices.updateEnrollment).not.toHaveBeenCalled();
+            expect(cardTitle(wrapper, "Edit Enrollment")).toBeUndefined();
+            expect(wrapper.text()).toContain("01");
+            wrapper.unmount();
+        });
+    });
+
+    describe("US-5.6 — Delete an enrollment", () => {
+        it("Student selects to delete an enrollment", async () => {
+            const wrapper = await mountEnrollments([enrollmentRecord()]);
+            await wrapper.find('[aria-label="Delete enrollment"]').trigger("click");
+            await flushPromises();
+
+            expect(cardTitle(wrapper, "Delete Enrollment")).toBeTruthy();
+            expect(wrapper.text()).toContain("Delete this enrollment?");
+            wrapper.unmount();
+        });
+
+        it("Student deletes an enrollment", async () => {
+            const existing = enrollmentRecord();
+            enrollmentServices.getEnrollments
+                .mockResolvedValueOnce({ data: [existing] })
+                .mockResolvedValueOnce({ data: [] });
+            sectionServices.getSections.mockResolvedValue({
+                data: [section, section2],
+            });
+            enrollmentServices.deleteEnrollment.mockResolvedValue({ data: {} });
+
+            const router = createRouter({
+                history: createMemoryHistory(),
+                routes: [
+                    { path: "/enrollments", name: "enrollments", component: Enrollments },
+                ],
+            });
+            await router.push("/enrollments");
+            await router.isReady();
+
+            const wrapper = mount(Enrollments, {
+                attachTo: document.body,
+                global: { plugins: [vuetify, router], stubs: viewStubs },
+            });
+            await flushPromises();
+
+            await wrapper.find('[aria-label="Delete enrollment"]').trigger("click");
+            await flushPromises();
+            await clickText(wrapper, "Delete Enrollment");
+
+            expect(enrollmentServices.deleteEnrollment).toHaveBeenCalledWith(
+                existing.id
+            );
+            expect(cardTitle(wrapper, "Delete Enrollment")).toBeUndefined();
+            expect(wrapper.text()).toContain(
+                "No enrollments yet. Create your first enrollment."
+            );
+            wrapper.unmount();
+        });
+
+        it("Student cancels deleting an enrollment", async () => {
+            const wrapper = await mountEnrollments([enrollmentRecord()]);
+            await wrapper.find('[aria-label="Delete enrollment"]').trigger("click");
+            await flushPromises();
+
+            const cancel = wrapper
+                .findAll("button")
+                .filter((button) => button.text() === "Cancel")
+                .at(-1);
+            await cancel.trigger("click");
+            await flushPromises();
+
+            expect(enrollmentServices.deleteEnrollment).not.toHaveBeenCalled();
+            expect(cardTitle(wrapper, "Delete Enrollment")).toBeUndefined();
+            expect(wrapper.text()).toContain("01");
             wrapper.unmount();
         });
     });

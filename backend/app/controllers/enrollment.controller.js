@@ -109,4 +109,88 @@ exports.create = async (req, res) => {
   }
 };
 
+exports.update = async (req, res) => {
+  try {
+    const enrollmentId = parseInt(req.params.enrollmentId, 10);
+    if (Number.isNaN(enrollmentId)) {
+      return res.status(404).send({
+        message: `Enrollment with id=${req.params.enrollmentId} not found.`,
+      });
+    }
+
+    const enrollment = await db.enrollment.findOne({
+      where: { id: enrollmentId, userId: req.user.id },
+    });
+    if (!enrollment) {
+      return res.status(404).send({
+        message: `Enrollment with id=${enrollmentId} not found.`,
+      });
+    }
+
+    const parsedSectionId = parseSectionId(req.body.sectionId);
+    if (parsedSectionId === null) {
+      return res.status(400).send({ message: "Required" });
+    }
+    if (Number.isNaN(parsedSectionId)) {
+      return res.status(400).send({
+        message: `Section with id=${req.body.sectionId} not found.`,
+      });
+    }
+
+    const section = await db.section.findByPk(parsedSectionId);
+    if (!section) {
+      return res.status(400).send({
+        message: `Section with id=${parsedSectionId} not found.`,
+      });
+    }
+
+    const duplicate = await db.enrollment.findOne({
+      where: { userId: req.user.id, sectionId: parsedSectionId },
+    });
+    if (duplicate && duplicate.id !== enrollment.id) {
+      return res.status(400).send({
+        message: "You are already enrolled in this course section.",
+      });
+    }
+
+    await enrollment.update({ sectionId: parsedSectionId });
+    const full = await findEnrollment(enrollment.id);
+    return res.status(200).send(toEnrollmentResponse(full));
+  } catch (err) {
+    if (err.name === "SequelizeUniqueConstraintError") {
+      return res.status(400).send({
+        message: "You are already enrolled in this course section.",
+      });
+    }
+    logger.error(`enrollment update failed: ${err.message}`);
+    return res.status(500).send({ message: "Failed to update enrollment." });
+  }
+};
+
+exports.remove = async (req, res) => {
+  try {
+    const enrollmentId = parseInt(req.params.enrollmentId, 10);
+    if (Number.isNaN(enrollmentId)) {
+      return res.status(404).send({
+        message: `Enrollment with id=${req.params.enrollmentId} not found.`,
+      });
+    }
+
+    const enrollment = await db.enrollment.findOne({
+      where: { id: enrollmentId, userId: req.user.id },
+    });
+    if (!enrollment) {
+      return res.status(404).send({
+        message: `Enrollment with id=${enrollmentId} not found.`,
+      });
+    }
+
+    await enrollment.destroy();
+    return res.status(200).send({ message: "Enrollment deleted." });
+  } catch (err) {
+    logger.error(`enrollment remove failed: ${err.message}`);
+    return res.status(500).send({ message: "Failed to delete enrollment." });
+  }
+};
+
 export default exports;
