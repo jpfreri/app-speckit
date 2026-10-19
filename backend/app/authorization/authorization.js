@@ -1,8 +1,3 @@
-/**
- * Authorization helpers — implement when Feature auth is specified.
- * See .cursor/rules/auth-patterns.mdc and security.mdc.
- */
-
 import { Op } from "sequelize";
 import db from "../models/index.js";
 
@@ -37,6 +32,14 @@ export const authenticate = async (req, res, next) => {
 
   next();
 };
+
+export const requireAdmin = (req, res, next) => {
+  if (req.user?.role !== "admin") {
+    return res.status(403).send({ message: "Admin role required." });
+  }
+  next();
+};
+
 export const authenticateAdmin = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
@@ -72,4 +75,3 @@ export const authenticateAdmin = async (req, res, next) => {
 
   next();
 };
-

@@ -73,6 +73,7 @@ describe("Feature 1 — User Authentication & Session Management", () => {
       expect(document.body.textContent).not.toContain("Sign out");
       expect(navLabels()).not.toContain("Semesters");
       expect(navLabels()).not.toContain("Courses");
+      expect(navLabels()).not.toContain("Sections");
     });
 
     it("Signed-in user sees Sign out in MenuBar", async () => {
@@ -91,6 +92,7 @@ describe("Feature 1 — User Authentication & Session Management", () => {
 
       expect(navLabels()).not.toContain("Semesters");
       expect(navLabels()).not.toContain("Courses");
+      expect(navLabels()).not.toContain("Sections");
     });
 
     it("Admin MenuBar in Feature 1 has Sign out but no catalog links yet", async () => {
@@ -101,6 +103,7 @@ describe("Feature 1 — User Authentication & Session Management", () => {
       expect(document.body.textContent).toContain("Sign out");
       expect(navLabels()).toContain("Semesters");
       expect(navLabels()).toContain("Courses");
+      expect(navLabels()).toContain("Sections");
     });
   });
 });
@@ -186,5 +189,43 @@ describe("Feature 3 — Course Management", () => {
 
       expect(navLabels()).not.toContain("Courses");
     });
+  });
+});
+
+describe("MenuBar", () => {
+  it("Menu Selection", async () => {
+    signInAs("admin");
+    const router = await createTestRouter("/");
+    ({ wrapper } = await mountWithPlugins(Host, {
+      router,
+      attachTo: document.body,
+    }));
+    await flushPromises();
+
+    const sectionsBtn = wrapper
+      .findAllComponents({ name: "VBtn" })
+      .find((btn) => btn.text().includes("Sections"));
+
+    expect(sectionsBtn).toBeTruthy();
+    expect(sectionsBtn.props("to")).toBe("/sections");
+
+    const link = sectionsBtn.find("a");
+    if (link.exists()) {
+      await link.trigger("click");
+    } else {
+      await sectionsBtn.trigger("click");
+    }
+    await flushPromises();
+
+    await vi.waitFor(() => {
+      expect(router.currentRoute.value.name).toBe("sections");
+    });
+  });
+
+  it("Student does not see Sections in the menu", async () => {
+    signInAs("student");
+    await mountMenuBar("/");
+
+    expect(navLabels()).not.toContain("Sections");
   });
 });
