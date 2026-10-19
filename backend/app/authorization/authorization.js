@@ -40,6 +40,13 @@ export const requireAdmin = (req, res, next) => {
   next();
 };
 
+export const requireStudent = (req, res, next) => {
+  if (req.user?.role !== "student") {
+    return res.status(403).send({ message: "Student role required." });
+  }
+  next();
+};
+
 export const authenticateAdmin = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
