@@ -10,7 +10,6 @@ const router = Router();
 router.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
-
 router.use("/users", userRoutes);
 router.use("/", authRoutes);
 router.use("/semesters", semesterRoutes);

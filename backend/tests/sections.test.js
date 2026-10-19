@@ -75,7 +75,7 @@ beforeEach(async () => {
 describe("sections API", () => {
   it("User creates a new section", async () => {
     const response = await request(app)
-      .post("/api/sections")
+      .post("/courses/sections")
       .set(auth(adminToken))
       .send(sectionBody());
 
@@ -98,7 +98,7 @@ describe("sections API", () => {
     await db.section.create(sectionBody());
 
     const response = await request(app)
-      .post("/api/sections")
+      .post("/courses/sections")
       .set(auth(adminToken))
       .send(sectionBody());
 
@@ -111,7 +111,7 @@ describe("sections API", () => {
 
   it("User creates a section with an unknown semester", async () => {
     const response = await request(app)
-      .post("/api/sections")
+      .post("/courses/sections")
       .set(auth(adminToken))
       .send(sectionBody({ semesterId: 999999 }));
 
@@ -124,7 +124,7 @@ describe("sections API", () => {
 
   it("User creates a section with an unknown course", async () => {
     const response = await request(app)
-      .post("/api/sections")
+      .post("/courses/sections")
       .set(auth(adminToken))
       .send(sectionBody({ courseId: 999999 }));
 
@@ -146,7 +146,7 @@ describe("sections API", () => {
     await db.section.create(sectionBody());
 
     const response = await request(app)
-      .get("/api/sections")
+      .get("/courses/sections")
       .set(auth(adminToken));
 
     expect(response.status).toBe(200);
@@ -160,7 +160,7 @@ describe("sections API", () => {
     const existing = await db.section.create(sectionBody());
 
     const response = await request(app)
-      .put(`/api/sections/${existing.id}`)
+      .put(`/courses/sections/${existing.id}`)
       .set(auth(adminToken))
       .send(
         sectionBody({
@@ -188,7 +188,7 @@ describe("sections API", () => {
     const existing = await db.section.create(sectionBody());
 
     const response = await request(app)
-      .delete(`/api/sections/${existing.id}`)
+      .delete(`/courses/sections/${existing.id}`)
       .set(auth(adminToken));
 
     expect(response.status).toBe(200);
@@ -199,7 +199,7 @@ describe("sections API", () => {
     await db.section.create(sectionBody());
 
     const response = await request(app)
-      .get("/api/sections")
+      .get("/courses/sections")
       .set(auth(studentToken));
 
     expect(response.status).toBe(200);
@@ -210,7 +210,7 @@ describe("sections API", () => {
 
   it("Student cannot create a section via the API", async () => {
     const response = await request(app)
-      .post("/api/sections")
+      .post("/courses/sections")
       .set(auth(studentToken))
       .send(sectionBody());
 
@@ -220,7 +220,7 @@ describe("sections API", () => {
   });
 
   it("Unauthenticated API request to sections", async () => {
-    const response = await request(app).get("/api/sections");
+    const response = await request(app).get("/courses/sections");
 
     expect(response.status).toBe(401);
     expect(response.body.message).toMatch(/Unauthorized/i);

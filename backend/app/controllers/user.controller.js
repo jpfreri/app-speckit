@@ -33,6 +33,9 @@ exports.findOne = async (req, res) => {
     if (Number.isNaN(userId)) {
       return res.status(400).send({ message: "Invalid user id." });
     }
+    if (userId !== req.user.id) {
+        return res.status(404).send({ message: `User with id=${userId} not found.` });
+      }
 
     const user = await db.user.findByPk(userId);
     if (!user) {

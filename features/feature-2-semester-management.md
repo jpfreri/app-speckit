@@ -75,19 +75,19 @@
 
 **As the** application  
 **I want to** allow only users with role `admin` to manage the semester catalog  
-**So that** students cannot create, edit, or delete semesters
+**So that** students cannot read, create, edit, or delete semesters
 
 **Priority:** P1  
-**Independent test:** Sign in as a student — **Semesters** is hidden; `POST /api/semesters` returns `403`  
+**Independent test:** Sign in as a student — **Semesters** is hidden; `GET /api/semesters` and `POST /api/semesters` return `403`  
 **Acceptance scenarios:** see ### US-2.7 under Acceptance Criteria
 
 ## Requirements
 
 ### Functional Requirements
 
-- **FR-001**: All semester endpoints MUST require a valid session (`authenticate`). `GET` MUST be allowed for any authenticated role. `POST`, `PUT`, and `DELETE` MUST require `req.user.role` equal to `admin`.
+- **FR-001**: All semester endpoints MUST require a valid session (`authenticate`). `GET`, `POST`, `PUT`, and `DELETE` MUST require `req.user.role` equal to `admin`.
 - **FR-002**: Semesters MUST be a **shared catalog**. The `semesters` table MUST NOT include `userId`. The API MUST ignore any client-supplied `userId`.
-- **FR-003**: Authenticated non-admin users (including `student`) MUST receive `403` with `{ "message": "Admin role required." }` on `POST`, `PUT`, and `DELETE`. `GET` MUST return `200` for any authenticated user. They MUST NOT see **Semesters** in `MenuBar`.
+- **FR-003**: Authenticated non-admin users (including `student`) MUST receive `403` with `{ "message": "Admin role required." }` on `GET`, `POST`, `PUT`, and `DELETE`. They MUST NOT see **Semesters** in `MenuBar`.
 - **FR-004**: Required semester fields MUST be present and trimmed. On the Semesters UI, empty or whitespace-only values MUST be blocked with **"Required"** and MUST NOT send an API request. If the API receives empty or whitespace-only required fields, it MUST return `400`.
 - **FR-005**: Unauthenticated semester API requests MUST return `401`. Unauthenticated navigation to `/semesters` MUST redirect to `login`.
 - **FR-006**: Semesters MUST be ordered by start date in API responses and in the semesters view.
@@ -102,7 +102,7 @@
 
 - Feature 1 auth (users with role of admin or student, authenticate, MenuBar) MUST be merged to dev before implementing this feature.
 - A user with role `admin` exists for this feature (Feature 1 `role`; tests may seed an admin).
-- Semesters are not owned by a signed-in user. Any authenticated user MAY `GET` the semester catalog. The **Semesters** manager UI is admin-only. Student enrollment UI is Feature 5.
+- Semesters are not owned by a signed-in user. Only role `admin` MAY `GET` or mutate the semester catalog. The **Semesters** manager UI is admin-only. Student enrollment UI is Feature 5.
 - Semesters use **dialog-based** workflows (no split sidebar / main panel).
 - API mount for this resource is `/api/…`. Use `/api/semesters`.
 
@@ -113,32 +113,31 @@
 - `endDate` before or equal to `startDate` → **"End date must be after start date."**
 - Duplicate semesterName → `400` with `{ "message": "Semester name is already taken." }`
 - Unknown `semesterId` on PUT/DELETE → `404` (semester does not exist — not a per-user hide).
-- Authenticated `student` (or any non-admin) on `POST` / `PUT` / `DELETE` → `403`.
-- Authenticated `student` on `GET` → `200` with the shared catalog.
+- Authenticated `student` (or any non-admin) on `GET` / `POST` / `PUT` / `DELETE` → `403`.
 - Unauthenticated user on `/semesters` or `GET /api/semesters` → redirect or `401`.
 
 ## Success Criteria
 
 - **SC-001**: Every Gherkin scenario has at least one automated test before merge.
 - **SC-002**: A signed-in admin can create, view, edit, and delete the shared semester catalog on one screen.
-- **SC-003**: A signed-in student MAY `GET` the semesters catalog; they cannot open the semesters manager and cannot mutate semesters via the API.
+- **SC-003**: A signed-in student cannot open the semesters manager and MUST receive `403` on `GET`, `POST`, `PUT`, and `DELETE` semester endpoints.
 - **SC-004**: `npm test` passes for semesters API and semesters view behavior.
 
 ---
 
 ## Data Ownership & Isolation
 
-Semesters are a **shared catalog**. They are not owned by or assigned to a user. Only role `admin` may manage them. Any authenticated user MAY `GET` the catalog. Role `student` does not see the manager UI (enrollment is feature 5).
+Semesters are a **shared catalog**. They are not owned by or assigned to a user. Only role `admin` may read or manage them. Role `student` does not see the manager UI and MUST NOT `GET` the catalog in this feature (enrollment is Feature 5).
 
 | Rule               | Requirement                                                                                                              |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------ |
-| **Read scope**     | `GET /api/semesters` returns **all** semesters to any authenticated user.                                                |
+| **Read scope**     | `GET /api/semesters` returns **all** semesters only when `req.user.role` is `admin`.                                     |
 | **Write scope**    | `POST`, `PUT`, and `DELETE` are allowed only when `req.user.role` is `admin`.                                            |
 | **Create scope**   | New semesters have no owner. Do not persist `userId`. Ignore `userId` if sent in the body.                                 |
 | **Missing semester** | Unknown `semesterId` → `404` with `{ "message": "Semester with id=<id> not found." }`. Never use ownership `404` to hide rows. |
-| **Non-admin**      | Authenticated non-admin `GET` → `200`. `POST` / `PUT` / `DELETE` → `403` with `{ "message": "Admin role required." }`.   |
+| **Non-admin**      | Authenticated non-admin `GET` / `POST` / `PUT` / `DELETE` → `403` with `{ "message": "Admin role required." }`.          |
 | **UI scope**       | **Semesters** menu and `/semesters` are admin-only. Students do not see this manager.                                        |
-| **Implementation** | Use `authenticate` on all endpoints. Use `requireAdmin` after `authenticate` on `POST`, `PUT`, and `DELETE` only.        |
+| **Implementation** | Use `authenticate` on all endpoints. Use `requireAdmin` after `authenticate` on `GET`, `POST`, `PUT`, and `DELETE`.      |
 
 ---
 
@@ -146,7 +145,7 @@ Semesters are a **shared catalog**. They are not owned by or assigned to a user.
 
 | Method   | Endpoint                     | Auth       | Purpose                                 |
 | -------- | ---------------------------- | ---------- | --------------------------------------- |
-| `GET`    | `/api/semesters`           | Yes        | Fetch all semesters in the shared catalog |
+| `GET`    | `/api/semesters`           | Yes, admin | Fetch all semesters in the shared catalog |
 | `POST`   | `/api/semesters`           | Yes, admin | Create a semester in the shared catalog   |
 | `PUT`    | `/api/semesters/:semesterId` | Yes, admin | Update a semester                         |
 | `DELETE` | `/api/semesters/:semesterId` | Yes, admin | Delete a semester                         |
@@ -179,7 +178,7 @@ Do not send `id` or `userId` on create. If `userId` is present, ignore it.
 ```
 
 **Error response:** `{ "message": "Human-readable explanation." }` with appropriate HTTP status.  
-**Not found:** unknown `semesterId` → `404` with `{ "message": "Semester with id=<id> not found." }`. Non-admin writes still use `403` (FR-003).
+**Not found:** unknown `semesterId` → `404` with `{ "message": "Semester with id=<id> not found." }`. Non-admin requests still use `403` (FR-003).
 
 ---
 
@@ -419,11 +418,11 @@ Unique index on (`semesterName`).
 - **When** I view the `MenuBar`
 - **Then** **Semesters** is not shown
 
-#### Scenario: Student can list semesters via the API
+#### Scenario: Student cannot list semesters via the API
 
 - **Given** I am signed in as a user with role `student`
 - **When** I request `GET /api/semesters`
-- **Then** the API returns `200` with an array of semester objects
+- **Then** the API returns `403` with `{ "message": "Admin role required." }`
 
 #### Scenario: Student cannot create a semester via the API
 
@@ -467,7 +466,7 @@ Unique index on (`semesterName`).
 | US-2.6 | User deletes a semester                                   | `backend/tests/semesters.test.js`, `frontend/tests/Semesters.test.js` | `User deletes a semester`                                   |
 | US-2.6 | User cancels deleting a semester                          | `frontend/tests/Semesters.test.js`                                  | `User cancels deleting a semester`                          |
 | US-2.7 | Student does not see Semesters in the menu                | `frontend/tests/MenuBar.test.js`                                  | `Student does not see Semesters in the menu`                |
-| US-2.7 | Student can list semesters via the API                    | `backend/tests/semesters.test.js`                                   | `Student can list semesters via the API`                    |
+| US-2.7 | Student cannot list semesters via the API                 | `backend/tests/semesters.test.js`                                   | `Student cannot list semesters via the API`                 |
 | US-2.7 | Student cannot create a semester via the API              | `backend/tests/semesters.test.js`                                   | `Student cannot create a semester via the API`              |
 | US-2.7 | Unauthenticated API request to semesters                  | `backend/tests/semesters.test.js`                                   | `Unauthenticated API request to semesters`                  |
 | US-2.7 | Unauthenticated user navigates to semesters               | `frontend/tests/router.test.js`                                   | `Unauthenticated user navigates to semesters`               |
@@ -506,7 +505,7 @@ Do not implement behavior not in this spec.
 
 ## Out of Scope
 
-- Student-facing semester catalog UI (API `GET` is in this feature)
+- Student-facing semester catalog UI and student `GET /api/semesters` (not in this feature)
 - Student enrollment in semesters (Feature 5)
 - Sections and their link to semesters (Feature 4)
 - Courses catalog (Feature 3)
@@ -519,6 +518,6 @@ Do not implement behavior not in this spec.
 
 - `MenuBar` is Feature 1 chrome; Feature 2 added **Semesters** for `admin`. Later features add their own items (e.g. Courses, Sections) and MUST NOT create a second MenuBar.
 - Feature 4 MUST reject `DELETE /api/semesters/:semesterId` with `400` and `{ "message": "Cannot delete semester: sections still exist." }` when sections still reference that semester. Do not cascade-delete sections.
-- Feature 5 uses `GET /api/semesters` so a student can select a semester before choosing sections to enroll in.
+- Feature 5 MUST NOT assume a student can `GET /api/semesters` from this feature. This feature exposes semester `GET` to `admin` only.
 
 ---

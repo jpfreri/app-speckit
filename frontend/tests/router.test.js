@@ -1,13 +1,47 @@
-import { beforeEach, describe, expect, it } from "vitest";
+/**
+ * Feature 2 — Semester Management
+ * Spec: features/feature-2-semester-management.md
+ */
+import { describe, it, expect, beforeEach } from "vitest";
 import router from "../src/router.js";
 
-beforeEach(async () => {
-  localStorage.clear();
-  await router.push("/");
-  await router.isReady();
+describe("Feature 2 — Semester Management", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  describe("US-2.7 — Restrict semester management to admins", () => {
+    it("Unauthenticated user navigates to semesters", async () => {
+      await router.push("/login");
+      await router.push("/semesters");
+
+      expect(router.currentRoute.value.name).toBe("login");
+    });
+  });
+});
+
+describe("Feature 3 — Course Management", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  describe("US-3.7 — Restrict course management to admins", () => {
+    it("Unauthenticated user navigates to courses", async () => {
+      await router.push("/login");
+      await router.push("/courses");
+
+      expect(router.currentRoute.value.name).toBe("login");
+    });
+  });
 });
 
 describe("router", () => {
+  beforeEach(async () => {
+    localStorage.clear();
+    await router.push("/login");
+    await router.isReady();
+  });
+
   it("Unauthenticated user navigates to sections", async () => {
     await router.push("/sections");
     await router.isReady();

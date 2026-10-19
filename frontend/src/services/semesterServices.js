@@ -5,8 +5,8 @@ const semesterServices = {
     return apiClient.get("semesters");
   },
 
-  createSemester(semester) {
-    return apiClient.post("semesters", semester);
+  createSemester(payload) {
+    return apiClient.post("semesters", payload);
   },
 
   updateSemester(semesterId, semester) {
@@ -16,6 +16,7 @@ const semesterServices = {
   deleteSemester(semesterId) {
     return apiClient.delete(`semesters/${semesterId}`);
   },
+
 };
 
 export default semesterServices;

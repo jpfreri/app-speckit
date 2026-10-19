@@ -5,17 +5,18 @@ const courseServices = {
     return apiClient.get("courses");
   },
 
-  createCourse(course) {
-    return apiClient.post("courses", course);
+  createCourse(payload) {
+    return apiClient.post("courses", payload);
   },
 
   updateCourse(courseId, course) {
     return apiClient.put(`courses/${courseId}`, course);
   },
 
-  deleteCourse(courseId) {
+deleteCourse(courseId) {
     return apiClient.delete(`courses/${courseId}`);
   },
+
 };
 
 export default courseServices;
