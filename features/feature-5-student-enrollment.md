@@ -9,7 +9,11 @@
 
 ---
 
+
+
 ## User Stories
+
+
 
 ### US-5.1: Open enrollment from the menu
 
@@ -83,6 +87,8 @@
 
 ## Requirements
 
+
+
 ### Functional Requirements
 
 - **FR-001**: Every enrollment endpoint MUST require a valid session (`authenticate`) and `req.user.role` equal to `student`. Any other authenticated role MUST receive `403` with `{ "message": "Student role required." }` on `GET`, `POST`, `PUT`, and `DELETE`, and MUST NOT persist a row.
@@ -96,6 +102,8 @@
 
 ---
 
+
+
 ## Assumptions
 
 - Feature 1 auth (roles `admin` and `student`, `authenticate`, `MenuBar`) MUST be merged to `dev` before this feature. Tests may seed a student and an admin.
@@ -105,6 +113,8 @@
 - Enrollment uses dialog-based workflows (no split sidebar / main panel).
 - API mount for this resource is `/api/enrollments`.
 - The server MAY join `sections`, `courses`, and `semesters` when building an enrollment response. That join is not the student calling `GET /api/semesters`.
+
+
 
 ## Edge Cases
 
@@ -117,6 +127,8 @@
 - Unauthenticated user on `/enrollments` or any enrollment route → redirect to `login`, or `401` for the API.
 - Authenticated non-student opens `/enrollments` → redirect to `home`.
 
+
+
 ## Success Criteria
 
 - **SC-001**: Every Gherkin scenario has at least one automated test before merge.
@@ -126,30 +138,38 @@
 
 ---
 
+
+
 ## Data Ownership & Isolation
 
 Enrollments are **owned by the signed-in student**. Only role `student` may read or change them. A student sees and changes only rows with their `userId`.
 
-| Rule | Requirement |
-| ---- | ----------- |
-| **Read scope** | `GET /api/enrollments` returns only enrollments where `userId` is `req.user.id`, and only when `req.user.role` is `student`. |
-| **Write scope** | `POST`, `PUT`, and `DELETE` are allowed only when `req.user.role` is `student`, and only for that student's rows. |
-| **Create scope** | New enrollments are bound to `req.user.id`. Ignore a client-supplied `userId`. Persist `sectionId` only; do not copy course, semester, or dates onto the row. |
-| **Cross-user access** | Another student's enrollment, or a missing id, on `PUT` / `DELETE` → `404` with `{ "message": "Enrollment with id=<id> not found." }`. |
-| **Non-student** | Authenticated non-student `GET` / `POST` / `PUT` / `DELETE` → `403` with `{ "message": "Student role required." }`. |
-| **UI scope** | **Enrollment** and `/enrollments` are for role `student`. Other roles do not see the menu item. Direct navigation redirects to `home`. |
-| **Implementation** | Use `authenticate` on every endpoint, then require role `student`. Scope every query and write by `req.user.id`. |
+
+| Rule                  | Requirement                                                                                                                                                   |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Read scope**        | `GET /api/enrollments` returns only enrollments where `userId` is `req.user.id`, and only when `req.user.role` is `student`.                                  |
+| **Write scope**       | `POST`, `PUT`, and `DELETE` are allowed only when `req.user.role` is `student`, and only for that student's rows.                                             |
+| **Create scope**      | New enrollments are bound to `req.user.id`. Ignore a client-supplied `userId`. Persist `sectionId` only; do not copy course, semester, or dates onto the row. |
+| **Cross-user access** | Another student's enrollment, or a missing id, on `PUT` / `DELETE` → `404` with `{ "message": "Enrollment with id=<id> not found." }`.                        |
+| **Non-student**       | Authenticated non-student `GET` / `POST` / `PUT` / `DELETE` → `403` with `{ "message": "Student role required." }`.                                           |
+| **UI scope**          | **Enrollment** and `/enrollments` are for role `student`. Other roles do not see the menu item. Direct navigation redirects to `home`.                        |
+| **Implementation**    | Use `authenticate` on every endpoint, then require role `student`. Scope every query and write by `req.user.id`.                                              |
+
 
 ---
 
+
+
 ## API Requirements
 
-| Method | Endpoint | Auth | Purpose |
-| ------ | -------- | ---- | ------- |
-| `GET` | `/api/enrollments` | Yes, student | List the signed-in student's enrollments |
-| `POST` | `/api/enrollments` | Yes, student | Enroll the signed-in student in a section |
-| `PUT` | `/api/enrollments/:enrollmentId` | Yes, student | Point one of that student's enrollments at a different section |
-| `DELETE` | `/api/enrollments/:enrollmentId` | Yes, student | Drop one of that student's enrollments |
+
+| Method   | Endpoint                         | Auth         | Purpose                                                        |
+| -------- | -------------------------------- | ------------ | -------------------------------------------------------------- |
+| `GET`    | `/api/enrollments`               | Yes, student | List the signed-in student's enrollments                       |
+| `POST`   | `/api/enrollments`               | Yes, student | Enroll the signed-in student in a section                      |
+| `PUT`    | `/api/enrollments/:enrollmentId` | Yes, student | Point one of that student's enrollments at a different section |
+| `DELETE` | `/api/enrollments/:enrollmentId` | Yes, student | Drop one of that student's enrollments                         |
+
 
 **Create enrollment request body:**
 
@@ -189,7 +209,11 @@ Do not send `id` or `userId`. If `userId`, `courseId`, `semesterId`, `startDate`
 
 ---
 
+
+
 ## Screen Requirements
+
+
 
 ### [View: Enrollment] — route name `enrollments` — path `/enrollments` — `Enrollments.vue`
 
@@ -218,23 +242,31 @@ Do not send `id` or `userId`. If `userId`, `courseId`, `semesterId`, `startDate`
 
 ---
 
+
+
 ## Key Entities
 
 - **Enrollment**: a student's link to one section. Owned by that student (`userId`). Stores `sectionId` only. Section name, course name, semester name, start date, and end date are read from the section when the API responds. Students manage their own rows in this feature. Admins manage sections in Feature 4 and do not manage enrollments here.
 
 ---
 
+
+
 ## Data Model Requirements
+
+
 
 ### `enrollments` table
 
-| Field | Type | Rules |
-| ----- | ---- | ----- |
-| `id` | INTEGER PK | Auto-increment |
-| `userId` | INTEGER FK | Required; references `users.id` (Feature 1); set from the session, not the body |
-| `sectionId` | INTEGER FK | Required; references `sections.id` (Feature 4) |
-| `createdAt` | DATETIME | Sequelize timestamps |
-| `updatedAt` | DATETIME | Sequelize timestamps |
+
+| Field       | Type       | Rules                                                                           |
+| ----------- | ---------- | ------------------------------------------------------------------------------- |
+| `id`        | INTEGER PK | Auto-increment                                                                  |
+| `userId`    | INTEGER FK | Required; references `users.id` (Feature 1); set from the session, not the body |
+| `sectionId` | INTEGER FK | Required; references `sections.id` (Feature 4)                                  |
+| `createdAt` | DATETIME   | Sequelize timestamps                                                            |
+| `updatedAt` | DATETIME   | Sequelize timestamps                                                            |
+
 
 Unique index on (`userId`, `sectionId`).
 
@@ -247,9 +279,15 @@ Course, semester, and dates stay on `courses`, `semesters`, and `sections`. Do n
 
 ---
 
+
+
 ## Acceptance Criteria (Gherkin)
 
+
+
 ### US-5.1 — Open enrollment from the menu
+
+
 
 #### Scenario: Menu Selection
 
@@ -257,7 +295,11 @@ Course, semester, and dates stay on `courses`, `semesters`, and `sections`. Do n
 - **When** I click **Enrollment** in the menu bar
 - **Then** the enrollment view is displayed
 
+
+
 ### US-5.2 — Add an enrollment
+
+
 
 #### Scenario: Student creates a new enrollment
 
@@ -273,6 +315,8 @@ Course, semester, and dates stay on `courses`, `semesters`, and `sections`. Do n
 - **And** the enrollment list shows section `01`, course `CMSC-1234`, and semester `2026 Fall`
 - **And** the add-enrollment dialog closes
 
+
+
 #### Scenario: Student creates an enrollment with a missing section
 
 - **Given** I am signed in as a user with role `student`
@@ -282,6 +326,8 @@ Course, semester, and dates stay on `courses`, `semesters`, and `sections`. Do n
 - **And** I click **Create**
 - **Then** no API call is made
 - **And** I see the message **"Required"**
+
+
 
 #### Scenario: Student enrolls in a section they already have
 
@@ -294,6 +340,8 @@ Course, semester, and dates stay on `courses`, `semesters`, and `sections`. Do n
 - **Then** no API call is made
 - **And** I see **"You are already enrolled in this course section."**
 
+
+
 #### Scenario: Student enrolls in a section they already have via the API
 
 - **Given** I am signed in as a user with role `student`
@@ -301,6 +349,8 @@ Course, semester, and dates stay on `courses`, `semesters`, and `sections`. Do n
 - **When** I send `POST /api/enrollments` with that same `sectionId`
 - **Then** the API returns `400` with `{ "message": "You are already enrolled in this course section." }`
 - **And** no second enrollment is stored
+
+
 
 #### Scenario: Student enrolls with an unknown section
 
@@ -311,7 +361,11 @@ Course, semester, and dates stay on `courses`, `semesters`, and `sections`. Do n
 
 ---
 
+
+
 ### US-5.3 — View enrollments
+
+
 
 #### Scenario: Enrollment view loads with existing enrollments
 
@@ -322,6 +376,8 @@ Course, semester, and dates stay on `courses`, `semesters`, and `sections`. Do n
 - **And** the rows are ordered by section start date
 - **And** each row shows section name, course, semester, start date, and end date
 
+
+
 #### Scenario: There are no enrollments
 
 - **Given** I am signed in as a user with role `student`
@@ -331,7 +387,11 @@ Course, semester, and dates stay on `courses`, `semesters`, and `sections`. Do n
 
 ---
 
+
+
 ### US-5.4 — Manage enrollment rows
+
+
 
 #### Scenario: Enrollment rows show edit and delete actions
 
@@ -344,7 +404,11 @@ Course, semester, and dates stay on `courses`, `semesters`, and `sections`. Do n
 
 ---
 
+
+
 ### US-5.5 — Edit an enrollment
+
+
 
 #### Scenario: Student selects to edit an enrollment
 
@@ -352,6 +416,8 @@ Course, semester, and dates stay on `courses`, `semesters`, and `sections`. Do n
 - **And** I am viewing the enrollment view
 - **When** I click the edit icon on an enrollment row
 - **Then** the enrollment edit dialog is displayed with that enrollment's section selected
+
+
 
 #### Scenario: Student edits an enrollment with a valid section and saves
 
@@ -365,6 +431,8 @@ Course, semester, and dates stay on `courses`, `semesters`, and `sections`. Do n
 - **And** the dialog is closed
 - **And** the enrollment list shows section `02`
 
+
+
 #### Scenario: Student edits an enrollment with a missing section and saves
 
 - **Given** I am signed in as a user with role `student`
@@ -376,6 +444,8 @@ Course, semester, and dates stay on `courses`, `semesters`, and `sections`. Do n
 - **And** I see the message **"Required"**
 - **And** the dialog is not closed
 
+
+
 #### Scenario: Student edits an enrollment and cancels
 
 - **Given** I am signed in as a user with role `student`
@@ -386,6 +456,8 @@ Course, semester, and dates stay on `courses`, `semesters`, and `sections`. Do n
 - **Then** the enrollment is not updated
 - **And** the dialog is closed
 
+
+
 #### Scenario: Student updates an enrollment that is missing or not theirs
 
 - **Given** I am signed in as a user with role `student`
@@ -394,7 +466,11 @@ Course, semester, and dates stay on `courses`, `semesters`, and `sections`. Do n
 
 ---
 
+
+
 ### US-5.6 — Delete an enrollment
+
+
 
 #### Scenario: Student selects to delete an enrollment
 
@@ -403,6 +479,8 @@ Course, semester, and dates stay on `courses`, `semesters`, and `sections`. Do n
 - **When** I click the delete icon on an enrollment row
 - **Then** the enrollment delete dialog is displayed
 - **And** I see **"Delete this enrollment?"**
+
+
 
 #### Scenario: Student deletes an enrollment
 
@@ -414,6 +492,8 @@ Course, semester, and dates stay on `courses`, `semesters`, and `sections`. Do n
 - **And** the dialog is closed
 - **And** that enrollment is not in the list
 
+
+
 #### Scenario: Student cancels deleting an enrollment
 
 - **Given** I am signed in as a user with role `student`
@@ -424,6 +504,8 @@ Course, semester, and dates stay on `courses`, `semesters`, and `sections`. Do n
 - **And** the dialog is closed
 - **And** the enrollment remains in the list
 
+
+
 #### Scenario: Student deletes an enrollment that is missing or not theirs
 
 - **Given** I am signed in as a user with role `student`
@@ -432,7 +514,11 @@ Course, semester, and dates stay on `courses`, `semesters`, and `sections`. Do n
 
 ---
 
+
+
 ### US-5.7 — Restrict enrollment to the signed-in student
+
+
 
 #### Scenario: Student sees only their own enrollments
 
@@ -441,11 +527,15 @@ Course, semester, and dates stay on `courses`, `semesters`, and `sections`. Do n
 - **When** I request `GET /api/enrollments`
 - **Then** the API returns `200` with only my enrollment
 
+
+
 #### Scenario: Admin does not see Enrollment in the menu
 
 - **Given** I am signed in as a user with role `admin`
 - **When** I view the menu bar
 - **Then** I do not see **Enrollment**
+
+
 
 #### Scenario: Non-student enrollment request is rejected
 
@@ -453,17 +543,23 @@ Course, semester, and dates stay on `courses`, `semesters`, and `sections`. Do n
 - **When** I request `GET /api/enrollments`
 - **Then** the API returns `403` with `{ "message": "Student role required." }`
 
+
+
 #### Scenario: Unauthenticated API request to enrollments
 
 - **Given** I have no valid session token
 - **When** I request `GET /api/enrollments`
 - **Then** the API returns `401` with an unauthorized message
 
+
+
 #### Scenario: Unauthenticated user navigates to enrollments
 
 - **Given** I have no session in `localStorage`
 - **When** I navigate to `/enrollments`
 - **Then** I am redirected to the login page
+
+
 
 #### Scenario: Non-student navigates to enrollments
 
@@ -473,38 +569,44 @@ Course, semester, and dates stay on `courses`, `semesters`, and `sections`. Do n
 
 ---
 
+
+
 ## Test Coverage Map
 
 Each scenario above maps to at least one automated test. Scenario titles match the `it` name.
 
-| Story | Scenario | Test file | Test name |
-| ----- | -------- | --------- | --------- |
-| US-5.1 | Menu Selection | `frontend/tests/MenuBar.test.js`, `frontend/tests/Enrollments.test.js` | `Menu Selection` |
-| US-5.2 | Student creates a new enrollment | `backend/tests/enrollments.test.js`, `frontend/tests/Enrollments.test.js` | `Student creates a new enrollment` |
-| US-5.2 | Student creates an enrollment with a missing section | `frontend/tests/Enrollments.test.js` | `Student creates an enrollment with a missing section` |
-| US-5.2 | Student enrolls in a section they already have | `frontend/tests/Enrollments.test.js` | `Student enrolls in a section they already have` |
-| US-5.2 | Student enrolls in a section they already have via the API | `backend/tests/enrollments.test.js` | `Student enrolls in a section they already have via the API` |
-| US-5.2 | Student enrolls with an unknown section | `backend/tests/enrollments.test.js` | `Student enrolls with an unknown section` |
-| US-5.3 | Enrollment view loads with existing enrollments | `backend/tests/enrollments.test.js`, `frontend/tests/Enrollments.test.js` | `Enrollment view loads with existing enrollments` |
-| US-5.3 | There are no enrollments | `frontend/tests/Enrollments.test.js` | `There are no enrollments` |
-| US-5.4 | Enrollment rows show edit and delete actions | `frontend/tests/Enrollments.test.js` | `Enrollment rows show edit and delete actions` |
-| US-5.5 | Student selects to edit an enrollment | `frontend/tests/Enrollments.test.js` | `Student selects to edit an enrollment` |
-| US-5.5 | Student edits an enrollment with a valid section and saves | `backend/tests/enrollments.test.js`, `frontend/tests/Enrollments.test.js` | `Student edits an enrollment with a valid section and saves` |
-| US-5.5 | Student edits an enrollment with a missing section and saves | `frontend/tests/Enrollments.test.js` | `Student edits an enrollment with a missing section and saves` |
-| US-5.5 | Student edits an enrollment and cancels | `frontend/tests/Enrollments.test.js` | `Student edits an enrollment and cancels` |
-| US-5.5 | Student updates an enrollment that is missing or not theirs | `backend/tests/enrollments.test.js` | `Student updates an enrollment that is missing or not theirs` |
-| US-5.6 | Student selects to delete an enrollment | `frontend/tests/Enrollments.test.js` | `Student selects to delete an enrollment` |
-| US-5.6 | Student deletes an enrollment | `backend/tests/enrollments.test.js`, `frontend/tests/Enrollments.test.js` | `Student deletes an enrollment` |
-| US-5.6 | Student cancels deleting an enrollment | `frontend/tests/Enrollments.test.js` | `Student cancels deleting an enrollment` |
-| US-5.6 | Student deletes an enrollment that is missing or not theirs | `backend/tests/enrollments.test.js` | `Student deletes an enrollment that is missing or not theirs` |
-| US-5.7 | Student sees only their own enrollments | `backend/tests/enrollments.test.js` | `Student sees only their own enrollments` |
-| US-5.7 | Admin does not see Enrollment in the menu | `frontend/tests/MenuBar.test.js` | `Admin does not see Enrollment in the menu` |
-| US-5.7 | Non-student enrollment request is rejected | `backend/tests/enrollments.test.js` | `Non-student enrollment request is rejected` |
-| US-5.7 | Unauthenticated API request to enrollments | `backend/tests/enrollments.test.js` | `Unauthenticated API request to enrollments` |
-| US-5.7 | Unauthenticated user navigates to enrollments | `frontend/tests/router.test.js` | `Unauthenticated user navigates to enrollments` |
-| US-5.7 | Non-student navigates to enrollments | `frontend/tests/router.test.js` | `Non-student navigates to enrollments` |
+
+| Story  | Scenario                                                     | Test file                                                                 | Test name                                                      |
+| ------ | ------------------------------------------------------------ | ------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| US-5.1 | Menu Selection                                               | `frontend/tests/MenuBar.test.js`, `frontend/tests/Enrollments.test.js`    | `Menu Selection`                                               |
+| US-5.2 | Student creates a new enrollment                             | `backend/tests/enrollments.test.js`, `frontend/tests/Enrollments.test.js` | `Student creates a new enrollment`                             |
+| US-5.2 | Student creates an enrollment with a missing section         | `frontend/tests/Enrollments.test.js`                                      | `Student creates an enrollment with a missing section`         |
+| US-5.2 | Student enrolls in a section they already have               | `frontend/tests/Enrollments.test.js`                                      | `Student enrolls in a section they already have`               |
+| US-5.2 | Student enrolls in a section they already have via the API   | `backend/tests/enrollments.test.js`                                       | `Student enrolls in a section they already have via the API`   |
+| US-5.2 | Student enrolls with an unknown section                      | `backend/tests/enrollments.test.js`                                       | `Student enrolls with an unknown section`                      |
+| US-5.3 | Enrollment view loads with existing enrollments              | `backend/tests/enrollments.test.js`, `frontend/tests/Enrollments.test.js` | `Enrollment view loads with existing enrollments`              |
+| US-5.3 | There are no enrollments                                     | `frontend/tests/Enrollments.test.js`                                      | `There are no enrollments`                                     |
+| US-5.4 | Enrollment rows show edit and delete actions                 | `frontend/tests/Enrollments.test.js`                                      | `Enrollment rows show edit and delete actions`                 |
+| US-5.5 | Student selects to edit an enrollment                        | `frontend/tests/Enrollments.test.js`                                      | `Student selects to edit an enrollment`                        |
+| US-5.5 | Student edits an enrollment with a valid section and saves   | `backend/tests/enrollments.test.js`, `frontend/tests/Enrollments.test.js` | `Student edits an enrollment with a valid section and saves`   |
+| US-5.5 | Student edits an enrollment with a missing section and saves | `frontend/tests/Enrollments.test.js`                                      | `Student edits an enrollment with a missing section and saves` |
+| US-5.5 | Student edits an enrollment and cancels                      | `frontend/tests/Enrollments.test.js`                                      | `Student edits an enrollment and cancels`                      |
+| US-5.5 | Student updates an enrollment that is missing or not theirs  | `backend/tests/enrollments.test.js`                                       | `Student updates an enrollment that is missing or not theirs`  |
+| US-5.6 | Student selects to delete an enrollment                      | `frontend/tests/Enrollments.test.js`                                      | `Student selects to delete an enrollment`                      |
+| US-5.6 | Student deletes an enrollment                                | `backend/tests/enrollments.test.js`, `frontend/tests/Enrollments.test.js` | `Student deletes an enrollment`                                |
+| US-5.6 | Student cancels deleting an enrollment                       | `frontend/tests/Enrollments.test.js`                                      | `Student cancels deleting an enrollment`                       |
+| US-5.6 | Student deletes an enrollment that is missing or not theirs  | `backend/tests/enrollments.test.js`                                       | `Student deletes an enrollment that is missing or not theirs`  |
+| US-5.7 | Student sees only their own enrollments                      | `backend/tests/enrollments.test.js`                                       | `Student sees only their own enrollments`                      |
+| US-5.7 | Admin does not see Enrollment in the menu                    | `frontend/tests/MenuBar.test.js`                                          | `Admin does not see Enrollment in the menu`                    |
+| US-5.7 | Non-student enrollment request is rejected                   | `backend/tests/enrollments.test.js`                                       | `Non-student enrollment request is rejected`                   |
+| US-5.7 | Unauthenticated API request to enrollments                   | `backend/tests/enrollments.test.js`                                       | `Unauthenticated API request to enrollments`                   |
+| US-5.7 | Unauthenticated user navigates to enrollments                | `frontend/tests/router.test.js`                                           | `Unauthenticated user navigates to enrollments`                |
+| US-5.7 | Non-student navigates to enrollments                         | `frontend/tests/router.test.js`                                           | `Non-student navigates to enrollments`                         |
+
 
 ---
+
+
 
 ## Agent implementation request
 
@@ -525,6 +627,8 @@ Do not call GET /api/semesters from the student client.
 
 ---
 
+
+
 ## Definition of Done
 
 - [ ] Backend and frontend implemented per this spec (**FR-00N** satisfied)
@@ -537,6 +641,8 @@ Do not call GET /api/semesters from the student client.
 
 ---
 
+
+
 ## Out of Scope
 
 - Creating or editing semesters (Feature 2), courses (Feature 3), or sections (Feature 4)
@@ -544,3 +650,4 @@ Do not call GET /api/semesters from the student client.
 - Section capacity, waitlists, and schedule time conflicts
 - Admin tools to enroll or drop a student
 - Creating `MenuBar` (introduced in [Feature 1](feature-1-user-auth-session-management.md); this feature only adds **Enrollment** for role `student`)
+
