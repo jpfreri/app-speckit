@@ -1,13 +1,19 @@
 import { Router } from "express";
-
+import sectionRoutes from "./section.routes.js";
+import authRoutes from "./auth.routes.js";
+import userRoutes from "./user.routes.js";
+import semesterRoutes from "./semester.routes.js";
+import courseRoutes from "./course.routes.js";
+import enrollmentRoutes from "./enrollment.routes.js";
 const router = Router();
 
 router.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
-
-// Register feature routers here as you implement them, e.g.:
-// import authRoutes from "./auth.routes.js";
-// router.use("/", authRoutes);
-
+router.use("/users", userRoutes);
+router.use("/", authRoutes);
+router.use("/semesters", semesterRoutes);
+router.use("/courses", courseRoutes);
+router.use("/sections", sectionRoutes);
+router.use("/enrollments", enrollmentRoutes);
 export default router;

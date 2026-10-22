@@ -1,19 +1,76 @@
 import { createRouter, createWebHistory } from "vue-router";
+import Login from "./views/Login.vue";
+import Utils from "./config/utils.js";
+import Register from "./views/Register.vue";
 import Home from "./views/Home.vue";
+import Semesters from "./views/Semesters.vue";
+import Courses from "./views/Courses.vue";
+import Sections from "./views/Sections.vue";
+import Enrollments from "./views/Enrollments.vue";
+
+const publicRouteNames = new Set(["login", "registers"]);
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    {
+      path: "/login",
+      name: "login",
+      component: Login,
+    },
+    {
+      path: "/register",
+      name: "registers",
+      component: Register,
+    },
     {
       path: "/",
       name: "home",
       component: Home,
     },
     {
-      path: "/:pathMatch(.*)*",
-      redirect: { name: "home" },
+      path: "/semesters",
+      name: "semesters",
+      component: Semesters,
+    },
+    {
+      path: "/courses",
+      name: "courses",
+      component: Courses,
+    },
+    {
+      path: "/sections",
+      name: "sections",
+      component: Sections,
+    },
+    {
+      path: "/enrollments",
+      name: "enrollments",
+      component: Enrollments,
     },
   ],
+});
+
+router.beforeEach((to, _from, next) => {
+  const user = Utils.getStore("user");
+  const isPublicRoute = publicRouteNames.has(to.name);
+
+  if (!user && !isPublicRoute) {
+    next({ name: "login" });
+    return;
+  }
+
+  if (user && isPublicRoute) {
+    next({ name: "home" });
+    return;
+  }
+
+  if (to.name === "enrollments" && user && user.role !== "student") {
+    next({ name: "home" });
+    return;
+  }
+
+  next();
 });
 
 export default router;

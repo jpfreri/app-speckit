@@ -4,14 +4,14 @@
 **Branch pattern:** `feature/3-course-management`
 **Status:** Draft
 **Created:** 2026-09-23
-**Input:** Signed-in admin users manage a shared course catalog on one screen; new courses are added via a dialog. Courses have a name (30 characters), a required semester (Feature 2), start date, and end date. Sections (Feature 4) belong to a course, and students (Feature 5) choose a course when enrolling. Courses are not assigned to a user.
+**Input:** Signed-in admin users manage a shared course catalog on one screen; new courses are added via a dialog. Courses have a name (30 characters) and a required semester (Feature 2). Courses do not have their own start or end date; they inherit them from their semester. Sections (Feature 4) belong to a course, and students (Feature 5) choose a course when enrolling. Courses are not assigned to a user.
 **Depends on:** [Feature 1 — User Authentication](feature-1-user-auth.md); [Feature 2 — Semester Management](feature-2-semester-management.md)
 
 ---
 
 ## User Stories
 
-### US-2.1: Select to work with Courses
+### US-3.1: Select to work with Courses
 
 **As a** signed-in admin user  
 **I want to** open the course view from the menu  
@@ -19,19 +19,19 @@
 
 **Priority:** P1  
 **Independent test:** login as admin, view Courses on menubar; course view appears
-**Acceptance scenarios:** see ### US-2.1 under Acceptance Criteria
+**Acceptance scenarios:** see ### US-3.1 under Acceptance Criteria
 
-### US-2.2: Create course
+### US-3.2: Create course
 
 **As a** signed-in admin user  
-**I want to** create courses (e.g. "2026 Fall", "2026 Spring")  
+**I want to** create courses
 **So that** sections can be scheduled in them and students can enroll
 
 **Priority:** P1  
 **Independent test:** Open add-course dialog, create a course; it appears in the courses view  
-**Acceptance scenarios:** see ### US-2.2 under Acceptance Criteria
+**Acceptance scenarios:** see ### US-3.2 under Acceptance Criteria
 
-### US-2.3: View courses
+### US-3.3: View courses
 
 **As a** signed-in admin user  
 **I want to** see all courses on one screen  
@@ -39,9 +39,9 @@
 
 **Priority:** P1  
 **Independent test:** Selecting Courses loads a screen that displays all courses  
-**Acceptance scenarios:** see ### US-2.3 under Acceptance Criteria
+**Acceptance scenarios:** see ### US-3.3 under Acceptance Criteria
 
-### US-2.4: Manage course rows
+### US-3.4: Manage course rows
 
 **As a** signed-in admin user  
 **I want** each course row to show **edit** and **delete** actions  
@@ -49,9 +49,9 @@
 
 **Priority:** P1  
 **Independent test:** Each course row exposes edit and delete icon actions  
-**Acceptance scenarios:** see ### US-2.4 under Acceptance Criteria
+**Acceptance scenarios:** see ### US-3.4 under Acceptance Criteria
 
-### US-2.5: Edit a course
+### US-3.5: Edit a course
 
 **As a** signed-in admin user  
 **I want to** edit course data  
@@ -59,9 +59,9 @@
 
 **Priority:** P2  
 **Independent test:** Edit a course from row actions; course view updates  
-**Acceptance scenarios:** see ### US-2.5 under Acceptance Criteria
+**Acceptance scenarios:** see ### US-3.5 under Acceptance Criteria
 
-### US-2.6: Delete a course
+### US-3.6: Delete a course
 
 **As a** signed-in admin user  
 **I want to** delete a course  
@@ -69,9 +69,9 @@
 
 **Priority:** P2  
 **Independent test:** Delete a course from row actions; course view updates  
-**Acceptance scenarios:** see ### US-2.6 under Acceptance Criteria
+**Acceptance scenarios:** see ### US-3.6 under Acceptance Criteria
 
-### US-2.7: Restrict course management to admins
+### US-3.7: Restrict course management to admins
 
 **As the** application  
 **I want to** allow only users with role `admin` to manage the course catalog  
@@ -79,7 +79,7 @@
 
 **Priority:** P1  
 **Independent test:** Sign in as a student — **Courses** is hidden; `POST /api/courses` returns `403`  
-**Acceptance scenarios:** see ### US-2.7 under Acceptance Criteria
+**Acceptance scenarios:** see ### US-3.7 under Acceptance Criteria
 
 ## Requirements
 
@@ -90,10 +90,10 @@
 - **FR-003**: Authenticated non-admin users (including `student`) MUST receive `403` with `{ "message": "Admin role required." }` on `POST`, `PUT`, and `DELETE`. `GET` MUST return `200` for any authenticated user. They MUST NOT see **Courses** in `MenuBar`.
 - **FR-004**: Required course fields MUST be present and trimmed. On the Courses UI, empty or whitespace-only values MUST be blocked with **"Required"** and MUST NOT send an API request. If the API receives empty or whitespace-only required fields, it MUST return `400`.
 - **FR-005**: Unauthenticated course API requests MUST return `401`. Unauthenticated navigation to `/courses` MUST redirect to `login`.
-- **FR-006**: Courses MUST be ordered by start date in API responses and in the courses view.
+- **FR-006**: Courses MUST be ordered by their semester's start date, then by course name, in API responses and in the courses view.
 - **FR-007**: This feature MUST deliver admin course CRUD and a **single-view** course UI in `Courses.vue` (dialog-based add/edit/delete). No sidebar/main split.
 - **FR-008**: `courseName` MUST be required, trimmed, and at most 30 characters. Too-long message: **"Course name must be 30 characters or fewer."** On the Courses UI, a too-long name MUST be blocked and MUST NOT send an API request. If the API receives a too-long `courseName`, it MUST return `400` with that message. `courseName` MUST be unique. Duplicate message: **"Course name is already taken."**
-- **FR-009**: `startDate` and `endDate` MUST be required. `endDate` MUST be after `startDate` (equal dates are invalid). Date-order message: **"End date must be after start date."** On the Courses UI, an invalid date order MUST be blocked and MUST NOT send an API request. If the API receives `endDate` before or equal to `startDate`, it MUST return `400` with that message.
+- **FR-009**: Courses MUST NOT store a start or end date. A course's dates are its semester's `startDate` and `endDate` (Feature 2). The API MUST ignore `startDate` or `endDate` if sent on create or update.
 - **FR-010**: Unknown courseId on PUT / DELETE MUST return 404 with message: **"Course with id=<id> not found."**
 - **FR-011**: `semesterId` MUST be required on create and update. It MUST reference an existing row in the Feature 2 `semesters` table. On the Courses UI, a missing semester MUST be blocked with **"Required"** and MUST NOT send an API request. If the API receives a missing `semesterId`, it MUST return `400`. If the API receives a `semesterId` that does not exist, it MUST return `400` with `{ "message": "Semester with id=<id> not found." }`.
 
@@ -112,7 +112,6 @@
 
 - Empty or whitespace-only required field (including missing semester) → client block; **"Required"**; no API call.
 - `courseName` longer than 30 characters → **"Course name must be 30 characters or fewer."**
-- `endDate` before or equal to `startDate` → **"End date must be after start date."**
 - Duplicate courseName → `400` with `{ "message": "Course name is already taken." }`
 - Unknown `semesterId` on POST/PUT → `400` with `{ "message": "Semester with id=<id> not found." }`
 - Unknown `courseId` on PUT/DELETE → `404` (course does not exist — not a per-user hide).
@@ -159,13 +158,11 @@ Courses are a **shared catalog**. They are not owned by or assigned to a user. O
 ```json
 {
   "courseName": "CMSC-1234",
-  "semesterId": 1,
-  "startDate": "2026-08-15",
-  "endDate": "2026-12-15"
+  "semesterId": 1
 }
 ```
 
-Do not send `id` or `userId` on create. If `userId` is present, ignore it. `semesterId` is required and MUST reference an existing semester (FR-011).
+Do not send `id`, `userId`, `startDate`, or `endDate` on create. If `userId`, `startDate`, or `endDate` is present, ignore it. `semesterId` is required and MUST reference an existing semester (FR-011).
 
 **Update course request body:** same fields as create (no `id` / `userId`).
 
@@ -176,8 +173,6 @@ Do not send `id` or `userId` on create. If `userId` is present, ignore it. `seme
   "id": 1,
   "courseName": "CMSC-1234",
   "semesterId": 1,
-  "startDate": "2026-08-15",
-  "endDate": "2026-12-15",
   "createdAt": "2026-07-02T12:00:00.000Z",
   "updatedAt": "2026-07-02T12:00:00.000Z"
 }
@@ -197,10 +192,8 @@ Do not send `id` or `userId` on create. If `userId` is present, ignore it. `seme
 - **Add Course** fields (same set on **Edit Course**, edit pre-filled):
   - **Course Name** (`v-text-field`)
   - **Semester** (`v-select`) — required; options loaded from the Feature 2 semester catalog (`GET /api/semesters`); on edit, pre-selected with the course's current semester. Admin MUST be able to assign a semester when adding or editing a course.
-  - **Start Date** (`v-date-picker`)
-  - **End Date** (`v-date-picker`)
 - **Add Course** actions: **Create** (`oc-cta`) / **Cancel** (secondary `variant="text"` or `outlined`).
-- List: `v-table` (or `v-list`); columns **course name**, **semester**, **start date**, and **end date**; rows ordered by start date (FR-006). No Items/sections icon in this feature.
+- List: `v-table` (or `v-list`); columns **course name**, **semester**; rows ordered by semester start date, then course name (FR-006). No Items/sections icon in this feature.
 - Icon-only row actions use `size="small"` and accessible `aria-label`s:
   - **Edit course** — opens **Edit Course** `<v-dialog>` pre-filled with current data; **Save Course** (`oc-cta`) / **Cancel** (secondary)
   - **Delete course** — opens **Delete Course** confirmation `<v-dialog>` with copy **"Delete this course?"**; **Delete Course** (`oc-cta`) / **Cancel** (secondary)
@@ -216,13 +209,13 @@ Do not send `id` or `userId` on create. If `userId` is present, ignore it. `seme
 - Use the `MenuBar` introduced in [Feature 1](feature-1-user-auth.md). Do **not** create a second `MenuBar`. Do **not** hide it on `login` / `register`.
 - Add **Courses** (allowed role `admin`; navigates to `/courses`) to `MenuBar`. Keep name and **Sign out** from Feature 1.
 - Students MUST NOT see **Courses** (`user.role` is not `admin`).
-- After login, the user remains on Feature 1 `home`. US-2.1 is selecting **Courses** in the menu.
+- After login, the user remains on Feature 1 `home`. US-3.1 is selecting **Courses** in the menu.
 
 ---
 
 ## Key Entities
 
-- **Course**: shared catalog row (course name, semester, start date, end date). Belongs to a Semester (Feature 2). Not owned by a user. Admins manage it in this feature. Sections are scheduled in a course (Feature 4), and students select a course when enrolling (Feature 5).
+- **Course**: shared catalog row (course name, semester). Belongs to a Semester (Feature 2) and inherits that semester's start and end dates. Not owned by a user. Admins manage it in this feature. Sections are scheduled in a course (Feature 4), and students select a course when enrolling (Feature 5).
 
 ---
 
@@ -235,12 +228,10 @@ Do not send `id` or `userId` on create. If `userId` is present, ignore it. `seme
 | `id`        | INTEGER PK | Auto-increment                                     |
 | `courseName`      | STRING(30) | Required; trimmed; at most 30 characters           |
 | `semesterId` | INTEGER FK | Required; references `semesters.id` (Feature 2)   |
-| `startDate` | DATE       | Required                                           |
-| `endDate`   | DATE       | Required; must be after `startDate`                |               |
-| `createdAt` | DATETIME       | Sequelize timestamps                               
-| `updatedAt` | DATETIME       | Sequelize timestamps                               |
+| `createdAt` | DATETIME   | Sequelize timestamps                               |
+| `updatedAt` | DATETIME   | Sequelize timestamps                               |
 
-Unique index on (`courseName`).  
+No `startDate` / `endDate` columns (FR-009). Unique index on (`courseName`).  
 
 ### Associations (in `models/index.js`)
 
@@ -251,7 +242,7 @@ Unique index on (`courseName`).
 
 ## Acceptance Criteria (Gherkin)
 
-### US-2.1 — Select to work with Courses
+### US-3.1 — Select to work with Courses
 
 #### Scenario: Menu Selection
 
@@ -259,7 +250,7 @@ Unique index on (`courseName`).
 - **When** I click **Courses** in Menu Bar
 - **Then** the courses view is displayed
 
-### US-2.2 — Create course
+### US-3.2 — Create course
 
 #### Scenario: User creates a new course
 
@@ -267,9 +258,9 @@ Unique index on (`courseName`).
 - **And** a semester named `2026 Fall` already exists
 - **And** I am viewing the courses view
 - **When** I click **+ New course**
-- **And** I enter course name `CMSC-1234`, select semester `2026 Fall`, start date `2026-08-15`, and end date `2026-12-15`
+- **And** I enter course name `CMSC-1234` and select semester `2026 Fall`
 - **And** I click **Create**
-- **Then** the API returns `201` with a course object containing `id`, `courseName` `CMSC-1234`, `semesterId`, `startDate`, and `endDate`
+- **Then** the API returns `201` with a course object containing `id`, `courseName` `CMSC-1234`, and `semesterId`
 - **And** `CMSC-1234` appears in the courses view list with semester `2026 Fall`
 - **And** the add-course dialog closes
 
@@ -289,21 +280,10 @@ Unique index on (`courseName`).
 - **And** a semester named `2026 Fall` already exists
 - **And** I am viewing the courses view
 - **When** I click **+ New course**
-- **And** I enter course name `2026 Fall Extended Summer Session`, select semester `2026 Fall`, with valid start and end dates
+- **And** I enter course name `2026 Fall Extended Summer Session` and select semester `2026 Fall`
 - **And** I click **Create**
 - **Then** no API call is made
 - **And** I see the message **"Course name must be 30 characters or fewer."**
-
-#### Scenario: User creates a course with end date before start date
-
-- **Given** I am signed in as a user with role `admin`
-- **And** a semester named `2026 Fall` already exists
-- **And** I am viewing the courses view
-- **When** I click **+ New course**
-- **And** I enter course name `CMSC-1234`, select semester `2026 Fall`, start date `2026-12-15`, and end date `2026-08-15`
-- **And** I click **Create**
-- **Then** no API call is made
-- **And** I see the message **"End date must be after start date."**
 
 #### Scenario: User creates a course with a duplicate name
 
@@ -312,7 +292,7 @@ Unique index on (`courseName`).
 - **And** a course named `CMSC-1234` already exists
 - **And** I am viewing the courses view
 - **When** I click **+ New course**
-- **And** I enter course name `CMSC-1234`, select semester `2026 Fall`, with valid start and end dates
+- **And** I enter course name `CMSC-1234` and select semester `2026 Fall`
 - **And** I click **Create**
 - **Then** the API returns `400` with `{ "message": "Course name is already taken." }`
 - **And** no second course named `CMSC-1234` is stored
@@ -326,7 +306,7 @@ Unique index on (`courseName`).
 
 ---
 
-### US-2.3 — View courses
+### US-3.3 — View courses
 
 #### Scenario: Courses view loads with existing courses
 
@@ -334,7 +314,7 @@ Unique index on (`courseName`).
 - **And** I am viewing the courses view
 - **And** courses exist
 - **When** I view the courses list
-- **Then** all the courses are displayed in the list ordered by start date
+- **Then** all the courses are displayed in the list ordered by their semester's start date, then by course name
 
 #### Scenario: There are no courses
 
@@ -346,7 +326,7 @@ Unique index on (`courseName`).
 
 ---
 
-### US-2.4 — Manage course rows
+### US-3.4 — Manage course rows
 
 #### Scenario: course rows show edit and delete actions
 
@@ -358,7 +338,7 @@ Unique index on (`courseName`).
 
 ---
 
-### US-2.5 — Edit a course
+### US-3.5 — Edit a course
 
 #### Scenario: User selects to edit a course
 
@@ -399,7 +379,7 @@ Unique index on (`courseName`).
 
 ---
 
-### US-2.6 — Delete a course
+### US-3.6 — Delete a course
 
 #### Scenario: User selects to delete a course
 
@@ -430,7 +410,7 @@ Unique index on (`courseName`).
 
 ---
 
-### US-2.7 — Restrict course management to admins
+### US-3.7 — Restrict course management to admins
 
 #### Scenario: Student does not see Courses in the menu
 
@@ -469,28 +449,27 @@ Unique index on (`courseName`).
 
 | Story  | Scenario                                                | Test file                                                         | Test name                                                 |
 | ------ | ------------------------------------------------------- | ----------------------------------------------------------------- | --------------------------------------------------------- |
-| US-2.1 | Menu Selection                                          | `frontend/tests/MenuBar.test.js`, `frontend/tests/Courses.test.js` | `Menu Selection`                                          |
-| US-2.2 | User creates a new course                               | `backend/tests/courses.test.js`, `frontend/tests/Courses.test.js` | `User creates a new course`                               |
-| US-2.2 | User creates a course with a missing required field     | `frontend/tests/Courses.test.js`                                  | `User creates a course with a missing required field`     |
-| US-2.2 | User creates a course with a name that is too long      | `frontend/tests/Courses.test.js`                                  | `User creates a course with a name that is too long`      |
-| US-2.2 | User creates a course with end date before start date   | `frontend/tests/Courses.test.js`                                  | `User creates a course with end date before start date`   |
-| US-2.2 | User creates a course with a duplicate name             | `backend/tests/courses.test.js`, `frontend/tests/Courses.test.js` | `User creates a course with a duplicate name`             |         
-| US-2.2 | User creates a course with an unknown semester          | `backend/tests/courses.test.js`                                   | `User creates a course with an unknown semester`          |
-| US-2.3 | Courses view loads with existing courses                | `backend/tests/courses.test.js`, `frontend/tests/Courses.test.js` | `Courses view loads with existing courses`                |
-| US-2.3 | There are no courses                                     | `frontend/tests/Courses.test.js`                                  | `There are no courses`                                     |
-| US-2.4 | course rows show edit and delete actions                | `frontend/tests/Courses.test.js`                                  | `course rows show edit and delete actions`                |
-| US-2.5 | User selects to edit a course                           | `frontend/tests/Courses.test.js`                                  | `User selects to edit a course`                           |
-| US-2.5 | User edits a course with valid values and saves         | `backend/tests/courses.test.js`, `frontend/tests/Courses.test.js` | `User edits a course with valid values and saves`         |
-| US-2.5 | User edits a course with invalid values and saves       | `frontend/tests/Courses.test.js`                                  | `User edits a course with invalid values and saves`       |
-| US-2.5 | User edits a course and cancels                         | `frontend/tests/Courses.test.js`                                  | `User edits a course and cancels`                         |
-| US-2.6 | User selects to delete a course                         | `frontend/tests/Courses.test.js`                                  | `User selects to delete a course`                         |
-| US-2.6 | User deletes a course                                   | `backend/tests/courses.test.js`, `frontend/tests/Courses.test.js` | `User deletes a course`                                   |
-| US-2.6 | User cancels deleting a course                          | `frontend/tests/Courses.test.js`                                  | `User cancels deleting a course`                          |
-| US-2.7 | Student does not see Courses in the menu                | `frontend/tests/MenuBar.test.js`                                  | `Student does not see Courses in the menu`                |
-| US-2.7 | Student can list courses via the API                    | `backend/tests/courses.test.js`                                   | `Student can list courses via the API`                    |
-| US-2.7 | Student cannot create a course via the API              | `backend/tests/courses.test.js`                                   | `Student cannot create a course via the API`              |
-| US-2.7 | Unauthenticated API request to courses                  | `backend/tests/courses.test.js`                                   | `Unauthenticated API request to courses`                  |
-| US-2.7 | Unauthenticated user navigates to courses               | `frontend/tests/router.test.js`                                   | `Unauthenticated user navigates to courses`               |
+| US-3.1 | Menu Selection                                          | `frontend/tests/MenuBar.test.js`, `frontend/tests/Courses.test.js` | `Menu Selection`                                          |
+| US-3.2 | User creates a new course                               | `backend/tests/courses.test.js`, `frontend/tests/Courses.test.js` | `User creates a new course`                               |
+| US-3.2 | User creates a course with a missing required field     | `frontend/tests/Courses.test.js`                                  | `User creates a course with a missing required field`     |
+| US-3.2 | User creates a course with a name that is too long      | `frontend/tests/Courses.test.js`                                  | `User creates a course with a name that is too long`      |
+| US-3.2 | User creates a course with a duplicate name             | `backend/tests/courses.test.js`, `frontend/tests/Courses.test.js` | `User creates a course with a duplicate name`             |         
+| US-3.2 | User creates a course with an unknown semester          | `backend/tests/courses.test.js`                                   | `User creates a course with an unknown semester`          |
+| US-3.3 | Courses view loads with existing courses                | `backend/tests/courses.test.js`, `frontend/tests/Courses.test.js` | `Courses view loads with existing courses`                |
+| US-3.3 | There are no courses                                     | `frontend/tests/Courses.test.js`                                  | `There are no courses`                                     |
+| US-3.4 | course rows show edit and delete actions                | `frontend/tests/Courses.test.js`                                  | `course rows show edit and delete actions`                |
+| US-3.5 | User selects to edit a course                           | `frontend/tests/Courses.test.js`                                  | `User selects to edit a course`                           |
+| US-3.5 | User edits a course with valid values and saves         | `backend/tests/courses.test.js`, `frontend/tests/Courses.test.js` | `User edits a course with valid values and saves`         |
+| US-3.5 | User edits a course with invalid values and saves       | `frontend/tests/Courses.test.js`                                  | `User edits a course with invalid values and saves`       |
+| US-3.5 | User edits a course and cancels                         | `frontend/tests/Courses.test.js`                                  | `User edits a course and cancels`                         |
+| US-3.6 | User selects to delete a course                         | `frontend/tests/Courses.test.js`                                  | `User selects to delete a course`                         |
+| US-3.6 | User deletes a course                                   | `backend/tests/courses.test.js`, `frontend/tests/Courses.test.js` | `User deletes a course`                                   |
+| US-3.6 | User cancels deleting a course                          | `frontend/tests/Courses.test.js`                                  | `User cancels deleting a course`                          |
+| US-3.7 | Student does not see Courses in the menu                | `frontend/tests/MenuBar.test.js`                                  | `Student does not see Courses in the menu`                |
+| US-3.7 | Student can list courses via the API                    | `backend/tests/courses.test.js`                                   | `Student can list courses via the API`                    |
+| US-3.7 | Student cannot create a course via the API              | `backend/tests/courses.test.js`                                   | `Student cannot create a course via the API`              |
+| US-3.7 | Unauthenticated API request to courses                  | `backend/tests/courses.test.js`                                   | `Unauthenticated API request to courses`                  |
+| US-3.7 | Unauthenticated user navigates to courses               | `frontend/tests/router.test.js`                                   | `Unauthenticated user navigates to courses`               |
 
 ---
 
@@ -529,7 +508,6 @@ Do not implement behavior not in this spec.
 - Student-facing course catalog UI (API `GET` is in this feature)
 - Student enrollment in courses (Feature 5)
 - Sections and their link to courses (Feature 4)
-- Courses catalog (Feature 3)
 - Non-admin course management UI
 - Creating `MenuBar` (introduced in [Feature 1](feature-1-user-auth.md); this feature only adds **Courses** for role `admin`)
 
