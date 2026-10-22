@@ -4,8 +4,8 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { flushPromises } from "@vue/test-utils";
-import Semesters from "../src/views/Semesters.vue";
 import semesterServices from "../src/services/semesterServices.js";
+import Semesters from "../src/views/Semesters.vue";
 import { mountWithPlugins } from "./testUtils.js";
 
 vi.mock("../src/services/semesterServices.js", () => ({
