@@ -19,7 +19,7 @@ const transports = [
   new DailyRotateFile({ filename: "logs/error-%DATE%.log", datePattern: "YYYY-MM-DD", level: "error" }),
   new DailyRotateFile({ filename: "logs/all-%DATE%.log", datePattern: "YYYY-MM-DD" }),
 ];
-
+// Cheese
 const logger = winston.createLogger({ level: level(), levels, format, transports });
 logger.stream = { write: (message) => logger.http(message.trim()) };
 
