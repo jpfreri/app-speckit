@@ -50,7 +50,7 @@ exports.findAll = async (req, res) => {
   try {
     const enrollments = await db.enrollment.findAll({
       where: { userId: req.user.id },
-      include: enrollmentInclude,
+      include: enrollmentInclude, 
       order: [[{ model: db.section, as: "section" }, "startDate", "ASC"]],
     });
 
