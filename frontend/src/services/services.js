@@ -3,7 +3,7 @@ import Utils from "../config/utils.js";
 import router from "../router.js";
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.DEV ? "http://localhost:3200/courses/" : "/courses/",
+  baseURL: import.meta.env.DEV ? "nodeapps/2026/project3/t2" : "/courses/",
   withCredentials: true,
 });
 
