@@ -6,6 +6,7 @@ import Home from "./views/Home.vue";
 import Semesters from "./views/Semesters.vue";
 import Courses from "./views/Courses.vue";
 import Sections from "./views/Sections.vue";
+import Enrollments from "./views/Enrollments.vue";
 
 const publicRouteNames = new Set(["login", "registers"]);
 
@@ -42,6 +43,11 @@ const router = createRouter({
       name: "sections",
       component: Sections,
     },
+    {
+      path: "/enrollments",
+      name: "enrollments",
+      component: Enrollments,
+    },
   ],
 });
 
@@ -55,6 +61,11 @@ router.beforeEach((to, _from, next) => {
   }
 
   if (user && isPublicRoute) {
+    next({ name: "home" });
+    return;
+  }
+
+  if (to.name === "enrollments" && user && user.role !== "student") {
     next({ name: "home" });
     return;
   }
