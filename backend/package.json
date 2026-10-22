@@ -9,7 +9,7 @@
     "dev": "node --watch server.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
-    "bundle": "rm -rf deploy && mkdir deploy && cp -r app server.js package.json package-lock.json app-speckit-backend.service .env deploy"
+    "bundle": "rm -rf deploy && mkdir deploy && cp -r app server.js package.json package-lock.json course-t2-speckit-backend.service .env deploy"
   },
   "keywords": ["node.js", "express", "sequelize"],
   "license": "ISC",
