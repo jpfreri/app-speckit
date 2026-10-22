@@ -78,7 +78,7 @@ describe("Feature 5 — Student Enrollment", () => {
   describe("US-5.2 — Add an enrollment", () => {
     it("Student creates a new enrollment", async () => {
       const response = await request(app)
-        .post("/courses/enrollments")
+        .post("/course-t2/enrollments")
         .set(auth(studentToken))
         .send({ sectionId: section.id });
 
@@ -106,7 +106,7 @@ describe("Feature 5 — Student Enrollment", () => {
       });
 
       const response = await request(app)
-        .post("/courses/enrollments")
+        .post("/course-t2/enrollments")
         .set(auth(studentToken))
         .send({ sectionId: section.id });
 
@@ -123,7 +123,7 @@ describe("Feature 5 — Student Enrollment", () => {
 
     it("Student enrolls with an unknown section", async () => {
       const response = await request(app)
-        .post("/courses/enrollments")
+        .post("/course-t2/enrollments")
         .set(auth(studentToken))
         .send({ sectionId: 999999 });
 
@@ -163,7 +163,7 @@ describe("Feature 5 — Student Enrollment", () => {
       });
 
       const response = await request(app)
-        .get("/courses/enrollments")
+        .get("/course-t2/enrollments")
         .set(auth(studentToken));
 
       expect(response.status).toBe(200);
@@ -202,7 +202,7 @@ describe("Feature 5 — Student Enrollment", () => {
       });
 
       const response = await request(app)
-        .put(`/courses/enrollments/${enrollment.id}`)
+        .put(`/course-t2/enrollments/${enrollment.id}`)
         .set(auth(studentToken))
         .send({ sectionId: section02.id });
 
@@ -219,7 +219,7 @@ describe("Feature 5 — Student Enrollment", () => {
       });
 
       const missing = await request(app)
-        .put("/courses/enrollments/999999")
+        .put("/course-t2/enrollments/999999")
         .set(auth(studentToken))
         .send({ sectionId: section.id });
 
@@ -229,7 +229,7 @@ describe("Feature 5 — Student Enrollment", () => {
       });
 
       const notTheirs = await request(app)
-        .put(`/courses/enrollments/${otherEnrollment.id}`)
+        .put(`/course-t2/enrollments/${otherEnrollment.id}`)
         .set(auth(studentToken))
         .send({ sectionId: section.id });
 
@@ -248,7 +248,7 @@ describe("Feature 5 — Student Enrollment", () => {
       });
 
       const response = await request(app)
-        .delete(`/courses/enrollments/${enrollment.id}`)
+        .delete(`/course-t2/enrollments/${enrollment.id}`)
         .set(auth(studentToken));
 
       expect(response.status).toBe(200);
@@ -265,7 +265,7 @@ describe("Feature 5 — Student Enrollment", () => {
       });
 
       const missing = await request(app)
-        .delete("/courses/enrollments/999999")
+        .delete("/course-t2/enrollments/999999")
         .set(auth(studentToken));
 
       expect(missing.status).toBe(404);
@@ -274,7 +274,7 @@ describe("Feature 5 — Student Enrollment", () => {
       });
 
       const notTheirs = await request(app)
-        .delete(`/courses/enrollments/${otherEnrollment.id}`)
+        .delete(`/course-t2/enrollments/${otherEnrollment.id}`)
         .set(auth(studentToken));
 
       expect(notTheirs.status).toBe(404);

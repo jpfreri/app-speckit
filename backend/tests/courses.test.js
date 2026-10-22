@@ -96,7 +96,7 @@ describe("Feature 3 — Course Management", () => {
       });
 
       const response = await request(app)
-        .get("/courses/courses")
+        .get("/course-t2/courses")
         .set(authHeader(token));
 
       expect(response.status).toBe(200);
@@ -114,7 +114,7 @@ describe("Feature 3 — Course Management", () => {
       const created = await createCourse(app, token, { semesterId });
 
       const response = await request(app)
-        .put(`/courses/courses/${created.body.id}`)
+        .put(`/course-t2/courses/${created.body.id}`)
         .set(authHeader(token))
         .send(validCourse({ semesterId, courseName: "CMSC-5678" }));
 
@@ -130,7 +130,7 @@ describe("Feature 3 — Course Management", () => {
       const created = await createCourse(app, token, { semesterId });
 
       const response = await request(app)
-        .delete(`/courses/courses/${created.body.id}`)
+        .delete(`/course-t2/courses/${created.body.id}`)
         .set(authHeader(token));
 
       expect(response.status).toBe(200);
@@ -146,7 +146,7 @@ describe("Feature 3 — Course Management", () => {
       const { token } = await registerUser(app);
 
       const response = await request(app)
-        .get("/courses/courses")
+        .get("/course-t2/courses")
         .set(authHeader(token));
 
       expect(response.status).toBe(200);
@@ -160,7 +160,7 @@ describe("Feature 3 — Course Management", () => {
       const { token } = await registerUser(app);
 
       const response = await request(app)
-        .post("/courses/courses")
+        .post("/course-t2/courses")
         .set(authHeader(token))
         .send(validCourse({ semesterId }));
 
@@ -170,7 +170,7 @@ describe("Feature 3 — Course Management", () => {
     });
 
     it("Unauthenticated API request to courses", async () => {
-      const response = await request(app).get("/courses/courses");
+      const response = await request(app).get("/course-t2/courses");
 
       expect(response.status).toBe(401);
       expect(response.body.message).toMatch(/Unauthorized/i);

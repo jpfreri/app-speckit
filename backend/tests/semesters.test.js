@@ -45,7 +45,7 @@ describe("Feature 2 — Semester Management", () => {
       await createSemester(app, token);
 
       const response = await request(app)
-        .post("/courses/semesters")
+        .post("/course-t2/semesters")
         .set(authHeader(token))
         .send(validSemester());
 
@@ -70,7 +70,7 @@ describe("Feature 2 — Semester Management", () => {
       });
 
       const response = await request(app)
-        .get("/courses/semesters")
+        .get("/course-t2/semesters")
         .set(authHeader(token));
 
       expect(response.status).toBe(200);
@@ -88,7 +88,7 @@ describe("Feature 2 — Semester Management", () => {
       const created = await createSemester(app, token);
 
       const response = await request(app)
-        .put(`/courses/semesters/${created.body.id}`)
+        .put(`/course-t2/semesters/${created.body.id}`)
         .set(authHeader(token))
         .send({
           semesterName: "2027 Spring",
@@ -109,7 +109,7 @@ describe("Feature 2 — Semester Management", () => {
       const created = await createSemester(app, token);
 
       const response = await request(app)
-        .delete(`/courses/semesters/${created.body.id}`)
+        .delete(`/course-t2/semesters/${created.body.id}`)
         .set(authHeader(token));
 
       expect(response.status).toBe(200);
@@ -122,7 +122,7 @@ describe("Feature 2 — Semester Management", () => {
       const { token } = await registerUser(app);
 
       const response = await request(app)
-        .get("/courses/semesters")
+        .get("/course-t2/semesters")
         .set(authHeader(token));
 
       expect(response.status).toBe(403);
@@ -133,7 +133,7 @@ describe("Feature 2 — Semester Management", () => {
       const { token } = await registerUser(app);
 
       const response = await request(app)
-        .post("/courses/semesters")
+        .post("/course-t2/semesters")
         .set(authHeader(token))
         .send(validSemester());
 
@@ -143,7 +143,7 @@ describe("Feature 2 — Semester Management", () => {
     });
 
     it("Unauthenticated API request to semesters", async () => {
-      const response = await request(app).get("/courses/semesters");
+      const response = await request(app).get("/course-t2/semesters");
 
       expect(response.status).toBe(401);
       expect(response.body.message).toMatch(/Unauthorized/i);

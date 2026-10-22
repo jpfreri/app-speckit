@@ -29,7 +29,7 @@ afterAll(async () => {
 describe("Feature 1 — User Authentication & Session Management", () => {
   describe("US-1.1 — Registration", () => {
     it("User registers with valid information", async () => {
-      const res = await request(app).post("/courses/register").send(validRegistration());
+      const res = await request(app).post("/course-t2/register").send(validRegistration());
 
       expect(res.status).toBe(201);
       expect(res.body).toEqual(
@@ -52,13 +52,13 @@ describe("Feature 1 — User Authentication & Session Management", () => {
     it("User submits registration with missing email", async () => {
       const { email: _omitted, ...payload } = validRegistration();
 
-      const res = await request(app).post("/courses/register").send(payload);
+      const res = await request(app).post("/course-t2/register").send(payload);
 
       expect(res.status).toBe(400);
       expect(res.body).toEqual({ message: "Email is required." });
 
       const whitespaceRes = await request(app)
-        .post("/courses/register")
+        .post("/course-t2/register")
         .send(validRegistration({ email: "   " }));
 
       expect(whitespaceRes.status).toBe(400);
@@ -68,7 +68,7 @@ describe("Feature 1 — User Authentication & Session Management", () => {
 
     it("User submits registration with password too short", async () => {
       const res = await request(app)
-        .post("/courses/register")
+        .post("/course-t2/register")
         .send(validRegistration({ password: "short12" }));
 
       expect(res.status).toBe(400);
@@ -77,17 +77,17 @@ describe("Feature 1 — User Authentication & Session Management", () => {
     });
 
     it("User registers with a duplicate username", async () => {
-      await request(app).post("/courses/register").send(validRegistration()).expect(201);
+      await request(app).post("/course-t2/register").send(validRegistration()).expect(201);
 
       const res = await request(app)
-        .post("/courses/register")
+        .post("/course-t2/register")
         .send(validRegistration({ email: "other@example.com" }));
 
       expect(res.status).toBe(400);
       expect(res.body).toEqual({ message: "Username is already taken." });
 
       const caseRes = await request(app)
-        .post("/courses/register")
+        .post("/course-t2/register")
         .send(validRegistration({ username: "  JDOE  ", email: "third@example.com" }));
 
       expect(caseRes.status).toBe(400);
@@ -96,10 +96,10 @@ describe("Feature 1 — User Authentication & Session Management", () => {
     });
 
     it("User registers with a duplicate email", async () => {
-      await request(app).post("/courses/register").send(validRegistration()).expect(201);
+      await request(app).post("/course-t2/register").send(validRegistration()).expect(201);
 
       const res = await request(app)
-        .post("/courses/register")
+        .post("/course-t2/register")
         .send(validRegistration({ username: "janedoe2" }));
 
       expect(res.status).toBe(400);

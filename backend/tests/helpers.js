@@ -9,7 +9,7 @@ export const syncTestDatabase = async () => {
 export const authHeader = (token) => ({ Authorization: `Bearer ${token}` });
 
 export const registerAdmin = async (app, overrides = {}) => {
-  const response = await request(app).post("/courses/register").send({
+  const response = await request(app).post("/course-t2/register").send({
     fName: "Alex",
     lName: "Admin",
     email: "admin@example.com",
@@ -27,7 +27,7 @@ export const registerAdmin = async (app, overrides = {}) => {
 };
 
 export const registerUser = async (app, overrides = {}) => {
-  const response = await request(app).post("/courses/register").send({
+  const response = await request(app).post("/course-t2/register").send({
     fName: "Jane",
     lName: "Doe",
     email: "student1@example.com",
@@ -53,7 +53,7 @@ export const validSemester = (overrides = {}) => ({
 
 export const createSemester = async (app, token, overrides = {}) => {
   return request(app)
-    .post("/courses/semesters")
+    .post("/course-t2/semesters")
     .set(authHeader(token))
     .send(validSemester(overrides));
 };
@@ -66,7 +66,7 @@ export const validCourse = (overrides = {}) => ({
 
 export const createCourse = async (app, token, overrides = {}) => {
   return request(app)
-    .post("/courses/courses")
+    .post("/course-t2/courses")
     .set(authHeader(token))
     .send(validCourse(overrides));
 };
