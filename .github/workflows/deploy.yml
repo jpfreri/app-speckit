@@ -101,7 +101,7 @@ jobs:
           command: |
             cd ${{ secrets.BACKEND_DEPLOY_TARGET }}
             npm install --omit=dev
-            sudo systemctl stop app-speckit-backend || true
-            sudo cp app-speckit-backend.service /lib/systemd/system/app-speckit-backend.service
+            sudo systemctl stop coures-t2-speckit-backend || true
+            sudo cp course-t2-speckit-backend.service /lib/systemd/system/course-t2-speckit-backend.service
             sudo systemctl daemon-reload
-            sudo systemctl start app-speckit-backend
+            sudo systemctl start course-t2-speckit-backend
